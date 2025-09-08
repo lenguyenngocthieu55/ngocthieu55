@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="vi" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <title>Tư vấn chọn tổ hợp theo năng lực học tập</title>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+            padding-bottom: 60px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        .DiemTHCS, .DiemTHCS2 {
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            color: #333;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+        }
+        .DiemTHCS table, .DiemTHCS2 table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .DiemTHCS th, .DiemTHCS td {
+            padding: 8px 5px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .display-box {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            color: #495057;
+            border-radius: 4px;
+            width: 100%;
+            height: 35px;
+            text-align: center;
+            box-sizing: border-box;
+            padding: 0 5px;
+        }
+        .display-title {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #87CEFA;
+            border: 1px solid #ced4da;
+            color: #333;
+            border-radius: 4px;
+            width: 100%;
+            height: 35px;
+            text-align: left;
+            padding-left: 5px;
+            box-sizing: border-box;
+            font-weight: bold;
+        }
+        .display-title2 {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #87CEFA;
+            border: 1px solid #ced4da;
+            color: #333;
+            border-radius: 4px;
+            width: 100%;
+            height: 35px;
+            text-align: center;
+            box-sizing: border-box;
+            font-weight: bold;
+        }
+        .button {
+            font-family: sans-serif;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            width: 100%;
+            border-radius: 4px;
+            height: 40px;
+            outline: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .button:active {
+            background: #004085;
+            box-shadow: inset 0px 0px 5px rgba(0, 0, 0, 0.2);
+        }
+        #excelFile {
+            display: none;
+        }
+        label[for="excelFile"] {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+        label[for="excelFile"]:hover {
+            background-color: #5a6268;
+        }
+        #fileName {
+            font-style: italic;
+            color: #666;
+            margin-left: 5px;
+        }
+        .button-download {
+            background-color: #28a745;
+        }
+        .button-download:hover {
+            background-color: #218838;
+        }
+        .button-clear {
+            background-color: #dc3545;
+        }
+        .button-clear:hover {
+            background-color: #c82333;
+        }
+        .result-container {
+            width: 100%;
+            height: 150px;
+            overflow-y: auto;
+            border: 1px solid #dae0e5;
+            border-radius: 4px;
+            background-color: #e2e6ea;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .result-box {
+            width: 100%;
+            text-align: center;
+            color: #1a1a1a;
+            font-size: 16px;
+            font-weight: bold;
+            white-space: pre-line;
+            word-wrap: break-word;
+        }
+        .result-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .result-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .result-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .result-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="DiemTHCS">
+            <table>
+                <tr>
+                    <td><input class="display-title" type="text" value="" disabled /></td>
+                    <td><input class="display-title2" type="text" value="Lớp 6" disabled /></td>
+                    <td><input class="display-title2" type="text" value="Lớp 7" disabled /></td>
+                    <td><input class="display-title2" type="text" value="Lớp 8" disabled /></td>
+                    <td><input class="display-title2" type="text" value="Lớp 9" disabled /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Ngữ văn" disabled /></td>
+                    <td><input class="display-box" type="text" id="van6" value="" /></td>
+                    <td><input class="display-box" type="text" id="van7" value="" /></td>
+                    <td><input class="display-box" type="text" id="van8" value="" /></td>
+                    <td><input class="display-box" type="text" id="van9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Toán" disabled /></td>
+                    <td><input class="display-box" type="text" id="toan6" value="" /></td>
+                    <td><input class="display-box" type="text" id="toan7" value="" /></td>
+                    <td><input class="display-box" type="text" id="toan8" value="" /></td>
+                    <td><input class="display-box" type="text" id="toan9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Ngoại ngữ 1" disabled /></td>
+                    <td><input class="display-box" type="text" id="anh6" value="" /></td>
+                    <td><input class="display-box" type="text" id="anh7" value="" /></td>
+                    <td><input class="display-box" type="text" id="anh8" value="" /></td>
+                    <td><input class="display-box" type="text" id="anh9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Giáo dục công dân" disabled /></td>
+                    <td><input class="display-box" type="text" id="gdcd6" value="" /></td>
+                    <td><input class="display-box" type="text" id="gdcd7" value="" /></td>
+                    <td><input class="display-box" type="text" id="gdcd8" value="" /></td>
+                    <td><input class="display-box" type="text" id="gdcd9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Lịch sử - Địa lý" disabled /></td>
+                    <td><input class="display-box" type="text" id="lsdl6" value="" /></td>
+                    <td><input class="display-box" type="text" id="lsdl7" value="" /></td>
+                    <td><input class="display-box" type="text" id="lsdl8" value="" /></td>
+                    <td><input class="display-box" type="text" id="lsdl9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Khoa học tự nhiên" disabled /></td>
+                    <td><input class="display-box" type="text" id="khtn6" value="" /></td>
+                    <td><input class="display-box" type="text" id="khtn7" value="" /></td>
+                    <td><input class="display-box" type="text" id="khtn8" value="" /></td>
+                    <td><input class="display-box" type="text" id="khtn9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Công nghệ" disabled /></td>
+                    <td><input class="display-box" type="text" id="cn6" value="" /></td>
+                    <td><input class="display-box" type="text" id="cn7" value="" /></td>
+                    <td><input class="display-box" type="text" id="cn8" value="" /></td>
+                    <td><input class="display-box" type="text" id="cn9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Tin học" disabled /></td>
+                    <td><input class="display-box" type="text" id="th6" value="" /></td>
+                    <td><input class="display-box" type="text" id="th7" value="" /></td>
+                    <td><input class="display-box" type="text" id="th8" value="" /></td>
+                    <td><input class="display-box" type="text" id="th9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Nghệ thuật" disabled /></td>
+                    <td><input class="display-box" type="text" id="nghethuat6" value="" /></td>
+                    <td><input class="display-box" type="text" id="nghethuat7" value="" /></td>
+                    <td><input class="display-box" type="text" id="nghethuat8" value="" /></td>
+                    <td><input class="display-box" type="text" id="nghethuat9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Hoạt động trải nghiệm" disabled /></td>
+                    <td><input class="display-box" type="text" id="hoatdong6" value="" /></td>
+                    <td><input class="display-box" type="text" id="hoatdong7" value="" /></td>
+                    <td><input class="display-box" type="text" id="hoatdong8" value="" /></td>
+                    <td><input class="display-box" type="text" id="hoatdong9" value="" /></td>
+                </tr>
+            </table>
+        </div>
+        <div class="DiemTHCS2">
+            <table>
+                <tr>
+                    <td colspan="2">
+                        <label for="excelFile">📁 File điểm</label>
+                        <span id="fileName">Chưa chọn file nào</span>
+                    </td>
+                    <td><input class="button" type="button" id="mau2" value="Đọc dữ liệu từ file"/></td>
+                </tr>
+                <tr>
+                    <td><input class="button" type="button" id="tuvan" value="Tư vấn chọn tổ hợp"/></td>
+                    <td><input class="button button-clear" type="button" id="xoa" value="Xóa"/></td>
+                    <td>
+                        <a href="https://docs.google.com/spreadsheets/d/12LE1T-fZDEmBTrQCzmQNjRHgfTy9X5Cy/edit?usp=sharing&ouid=113662691499014817150&rtpof=true&sd=true" download>
+                            <input class="button button-download" type="button" value="Download file mẫu"/>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <div class="result-container">
+                            <div class="result-box" id="kqtuvan"></div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <footer>
+        Cuộc thi sáng tạo thanh thiếu niên nhi đồng tỉnh Hưng Yên lần thứ IV năm 2025
+    </footer>
+    <input type="file" id="excelFile" accept=".xls,.xlsx"/>
+    <script>
+        let selectedFile;
+        document.getElementById('excelFile').addEventListener('change', function (e) {
+            selectedFile = e.target.files[0];
+            document.getElementById('fileName').textContent = selectedFile ? selectedFile.name : "Chưa chọn file nào";
+        });
+        document.getElementById('mau2').addEventListener('click', function () {
+            if (!selectedFile) {
+                alert("Vui lòng chọn một file Excel trước.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(sheet);
+                if (jsonData.length === 0) {
+                    alert("File Excel không có dữ liệu hoặc không đúng định dạng.");
+                    return;
+                }
+                const row = jsonData[0];
+                document.getElementById("van6").value = row["Van6"] || "";
+                document.getElementById("van7").value = row["Van7"] || "";
+                document.getElementById("van8").value = row["Van8"] || "";
+                document.getElementById("van9").value = row["Van9"] || "";
+                document.getElementById("toan6").value = row["Toan6"] || "";
+                document.getElementById("toan7").value = row["Toan7"] || "";
+                document.getElementById("toan8").value = row["Toan8"] || "";
+                document.getElementById("toan9").value = row["Toan9"] || "";
+                document.getElementById("anh6").value = row["Anh6"] || "";
+                document.getElementById("anh7").value = row["Anh7"] || "";
+                document.getElementById("anh8").value = row["Anh8"] || "";
+                document.getElementById("anh9").value = row["Anh9"] || "";
+                document.getElementById("gdcd6").value = row["GDCD6"] || "";
+                document.getElementById("gdcd7").value = row["GDCD7"] || "";
+                document.getElementById("gdcd8").value = row["GDCD8"] || "";
+                document.getElementById("gdcd9").value = row["GDCD9"] || "";
+                document.getElementById("lsdl6").value = row["LSDL6"] || "";
+                document.getElementById("lsdl7").value = row["LSDL7"] || "";
+                document.getElementById("lsdl8").value = row["LSDL8"] || "";
+                document.getElementById("lsdl9").value = row["LSDL9"] || "";
+                document.getElementById("khtn6").value = row["KHTN6"] || "";
+                document.getElementById("khtn7").value = row["KHTN7"] || "";
+                document.getElementById("khtn8").value = row["KHTN8"] || "";
+                document.getElementById("khtn9").value = row["KHTN9"] || "";
+                document.getElementById("cn6").value = row["CongNghe6"] || "";
+                document.getElementById("cn7").value = row["CongNghe7"] || "";
+                document.getElementById("cn8").value = row["CongNghe8"] || "";
+                document.getElementById("cn9").value = row["CongNghe9"] || "";
+                document.getElementById("th6").value = row["Tin6"] || "";
+                document.getElementById("th7").value = row["Tin7"] || "";
+                document.getElementById("th8").value = row["Tin8"] || "";
+                document.getElementById("th9").value = row["Tin9"] || "";
+                document.getElementById("nghethuat6").value = row["NgheThuat6"] || "";
+                document.getElementById("nghethuat7").value = row["NgheThuat7"] || "";
+                document.getElementById("nghethuat8").value = row["NgheThuat8"] || "";
+                document.getElementById("nghethuat9").value = row["NgheThuat9"] || "";
+                document.getElementById("hoatdong6").value = row["HoatDong6"] || "";
+                document.getElementById("hoatdong7").value = row["HoatDong7"] || "";
+                document.getElementById("hoatdong8").value = row["HoatDong8"] || "";
+                document.getElementById("hoatdong9").value = row["HoatDong9"] || "";
+                alert("Dữ liệu đã được đọc thành công!");
+            };
+            reader.readAsArrayBuffer(selectedFile);
+        });
+        document.getElementById("tuvan").onclick = function() {
+            let van6 = parseFloat(document.getElementById('van6').value) || 0;
+            let van7 = parseFloat(document.getElementById('van7').value) || 0;
+            let van8 = parseFloat(document.getElementById('van8').value) || 0;
+            let van9 = parseFloat(document.getElementById('van9').value) || 0;
+            let toan6 = parseFloat(document.getElementById('toan6').value) || 0;
+            let toan7 = parseFloat(document.getElementById('toan7').value) || 0;
+            let toan8 = parseFloat(document.getElementById('toan8').value) || 0;
+            let toan9 = parseFloat(document.getElementById('toan9').value) || 0;
+            let anh6 = parseFloat(document.getElementById('anh6').value) || 0;
+            let anh7 = parseFloat(document.getElementById('anh7').value) || 0;
+            let anh8 = parseFloat(document.getElementById('anh8').value) || 0;
+            let anh9 = parseFloat(document.getElementById('anh9').value) || 0;
+            let gdcd6 = parseFloat(document.getElementById('gdcd6').value) || 0;
+            let gdcd7 = parseFloat(document.getElementById('gdcd7').value) || 0;
+            let gdcd8 = parseFloat(document.getElementById('gdcd8').value) || 0;
+            let gdcd9 = parseFloat(document.getElementById('gdcd9').value) || 0;
+            let lsdl6 = parseFloat(document.getElementById('lsdl6').value) || 0;
+            let lsdl7 = parseFloat(document.getElementById('lsdl7').value) || 0;
+            let lsdl8 = parseFloat(document.getElementById('lsdl8').value) || 0;
+            let lsdl9 = parseFloat(document.getElementById('lsdl9').value) || 0;
+            let khtn6 = parseFloat(document.getElementById('khtn6').value) || 0;
+            let khtn7 = parseFloat(document.getElementById('khtn7').value) || 0;
+            let khtn8 = parseFloat(document.getElementById('khtn8').value) || 0;
+            let khtn9 = parseFloat(document.getElementById('khtn9').value) || 0;
+            let cn6 = parseFloat(document.getElementById('cn6').value) || 0;
+            let cn7 = parseFloat(document.getElementById('cn7').value) || 0;
+            let cn8 = parseFloat(document.getElementById('cn8').value) || 0;
+            let cn9 = parseFloat(document.getElementById('cn9').value) || 0;
+            let th6 = parseFloat(document.getElementById('th6').value) || 0;
+            let th7 = parseFloat(document.getElementById('th7').value) || 0;
+            let th8 = parseFloat(document.getElementById('th8').value) || 0;
+            let th9 = parseFloat(document.getElementById('th9').value) || 0;
+            let nghethuat6 = parseFloat(document.getElementById('nghethuat6').value) || 0;
+            let nghethuat7 = parseFloat(document.getElementById('nghethuat7').value) || 0;
+            let nghethuat8 = parseFloat(document.getElementById('nghethuat8').value) || 0;
+            let nghethuat9 = parseFloat(document.getElementById('nghethuat9').value) || 0;
+            let hoatdong6 = parseFloat(document.getElementById('hoatdong6').value) || 0;
+            let hoatdong7 = parseFloat(document.getElementById('hoatdong7').value) || 0;
+            let hoatdong8 = parseFloat(document.getElementById('hoatdong8').value) || 0;
+            let hoatdong9 = parseFloat(document.getElementById('hoatdong9').value) || 0;
+            const calculateAverage = (scores) => {
+                const validScores = scores.filter(s => s > 0);
+                return validScores.length > 0 ? validScores.reduce((sum, s) => sum + s, 0) / validScores.length : 0;
+            };
+            let tbVan = calculateAverage([van6, van7, van8, van9]);
+            let tbToan = calculateAverage([toan6, toan7, toan8, toan9]);
+            let tbAnh = calculateAverage([anh6, anh7, anh8, anh9]);
+            let tbGDCD = calculateAverage([gdcd6, gdcd7, gdcd8, gdcd9]);
+            let tbLSDL = calculateAverage([lsdl6, lsdl7, lsdl8, lsdl9]);
+            let tbKHTN = calculateAverage([khtn6, khtn7, khtn8, khtn9]);
+            let tbCN = calculateAverage([cn6, cn7, cn8, cn9]);
+            let tbTH = calculateAverage([th6, th7, th8, th9]);
+            let tbNgheThuat = calculateAverage([nghethuat6, nghethuat7, nghethuat8, nghethuat9]);
+            let tbHoatDong = calculateAverage([hoatdong6, hoatdong7, hoatdong8, hoatdong9]);
+            let allSubjects = [
+                van6, van7, van8, van9,
+                toan6, toan7, toan8, toan9,
+                anh6, anh7, anh8, anh9,
+                gdcd6, gdcd7, gdcd8, gdcd9,
+                lsdl6, lsdl7, lsdl8, lsdl9,
+                khtn6, khtn7, khtn8, khtn9,
+                cn6, cn7, cn8, cn9,
+                th6, th7, th8, th9,
+                nghethuat6, nghethuat7, nghethuat8, nghethuat9,
+                hoatdong6, hoatdong7, hoatdong8, hoatdong9
+            ];
+            let tbAll = calculateAverage(allSubjects);
+            let subjectsScores = [
+                { name: "Ngữ văn", score: tbVan },
+                { name: "Toán", score: tbToan },
+                { name: "Ngoại ngữ", score: tbAnh },
+                { name: "Giáo dục công dân", score: tbGDCD },
+                { name: "Lịch sử - Địa lý", score: tbLSDL },
+                { name: "Khoa học tự nhiên", score: tbKHTN },
+                { name: "Công nghệ", score: tbCN },
+                { name: "Tin học", score: tbTH }
+            ];
+            let highScoringSubjects = subjectsScores.filter(subject => subject.score >= 6.5);
+            if (highScoringSubjects.length < 2) {
+                subjectsScores.sort((a, b) => b.score - a.score);
+                let topSubject = subjectsScores[0];
+                let secondSubject = subjectsScores[1];
+                let recommendedVocations = [];
+                if (topSubject.score < 5.0) {
+                    recommendedVocations.push("Hiện tại điểm số các môn đều thấp, bạn nên tập trung cải thiện học lực trước khi chọn nghề.");
+                } else {
+                    switch(topSubject.name) {
+                        case "Toán":
+                        case "Khoa học tự nhiên":
+                            recommendedVocations.push("Sửa chữa điện", "Cơ khí lắp ráp", "Chế biến thực phẩm");
+                            if (secondSubject.name === "Công nghệ" && secondSubject.score >= 6.0) {
+                                recommendedVocations.push("May công nghiệp");
+                            }
+                            break;
+                        case "Công nghệ":
+                            recommendedVocations.push("May công nghiệp", "Cơ khí lắp ráp", "Hàn cơ khí");
+                            break;
+                        case "Tin học":
+                            recommendedVocations.push("Sửa chữa thiết bị điện tử", "Lắp ráp máy tính", "Cài đặt phần mềm cơ bản");
+                            break;
+                        case "Ngữ văn":
+                        case "Giáo dục công dân":
+                            recommendedVocations.push("Nhân viên dịch vụ khách hàng", "Thư ký văn phòng", "Hỗ trợ hành chính");
+                            break;
+                        case "Ngoại ngữ":
+                            recommendedVocations.push("Nhân viên lễ tân", "Hỗ trợ du lịch cơ bản", "Nhân viên bán hàng");
+                            break;
+                        case "Lịch sử - Địa lý":
+                            recommendedVocations.push("Hỗ trợ du lịch địa phương", "Nhân viên bảo vệ môi trường", "Công nhân nông nghiệp");
+                            break;
+                    }
+                }
+                let resultText = "════════ TƯ VẤN HƯỚNG NGHIỆP ════════\n\n";
+                resultText += `📉 Điểm trung bình tất cả các môn: ${tbAll.toFixed(2)}\n\n`;
+                resultText += "🏭 GỢI Ý HỌC NGHỀ:\n";
+                resultText += `Dựa trên năng lực của bạn, bạn nên cân nhắc học các nghề sau:\n`;
+                recommendedVocations.forEach(vocation => {
+                    resultText += `🔹 ${vocation}\n`;
+                });
+                resultText += "\n📊 ĐIỂM TRUNG BÌNH CÁC MÔN:\n";
+                resultText += `- Ngữ văn: ${tbVan.toFixed(2)}\n`;
+                resultText += `- Toán: ${tbToan.toFixed(2)}\n`;
+                resultText += `- Ngoại ngữ: ${tbAnh.toFixed(2)}\n`;
+                resultText += `- Khoa học tự nhiên: ${tbKHTN.toFixed(2)}\n`;
+                resultText += `- Lịch sử - Địa lý: ${tbLSDL.toFixed(2)}\n`;
+                resultText += `- Công nghệ: ${tbCN.toFixed(2)}\n`;
+                resultText += `- Tin học: ${tbTH.toFixed(2)}\n\n`;
+                resultText += "💡 LỜI KHUYÊN: Điểm số hiện tại cho thấy bạn phù hợp với các chương trình đào tạo nghề cơ bản. Hãy chọn nghề phù hợp với sở thích và năng lực, đồng thời tiếp tục cải thiện các môn học để có thêm cơ hội. Liên hệ với trung tâm hướng nghiệp để biết thêm chi tiết.";
+                document.getElementById("kqtuvan").textContent = resultText;
+                return;
+            }
+            const toHop = [
+                {
+                    name: "A00 (Toán, Vật lý, Hóa học)",
+                    subjects: ["Toán", "KHTN"],
+                    weights: [0.6, 0.4],
+                    check: () => tbToan >= 6.5 && tbKHTN >= 6.5
+                },
+                 {
+                    name: "B00 (Toán, Hóa học, Sinh học)",
+                    subjects: ["Toán", "KHTN"],
+                    weights: [0.5, 0.5],
+                    check: () => tbToan >= 6.5 && tbKHTN >= 6.5
+                },
+                {
+                    name: "A01 (Toán, Vật lý, Tiếng Anh)",
+                    subjects: ["Toán", "KHTN", "Anh"],
+                    weights: [0.4, 0.3, 0.3],
+                    check: () => tbToan >= 6.5 && tbKHTN >= 6.5 && tbAnh >= 6.5
+                },
+                {
+                    name: "D01 (Toán, Ngữ văn, Tiếng Anh)",
+                    subjects: ["Toán", "Văn", "Anh"],
+                    weights: [0.4, 0.3, 0.3],
+                    check: () => tbToan >= 6.5 && tbVan >= 6.5 && tbAnh >= 6.5
+                },
+                {
+                    name: "C00 (Ngữ văn, Lịch sử, Địa lý)",
+                    subjects: ["Văn", "LSDL"],
+                    weights: [0.5, 0.5],
+                    check: () => tbVan >= 6.5 && tbLSDL >= 6.5
+                }
+                
+            ];
+            let diemToHop = toHop
+                .filter(comb => comb.check())
+                .map(comb => {
+                    let diem = 0;
+                    comb.subjects.forEach((subject, index) => {
+                        switch(subject) {
+                            case "Văn": diem += tbVan * comb.weights[index]; break;
+                            case "Toán": diem += tbToan * comb.weights[index]; break;
+                            case "Anh": diem += tbAnh * comb.weights[index]; break;
+                            case "GDCD": diem += tbGDCD * comb.weights[index]; break;
+                            case "LSDL": diem += tbLSDL * comb.weights[index]; break;
+                            case "KHTN": diem += tbKHTN * comb.weights[index]; break;
+                            case "CN": diem += tbCN * comb.weights[index]; break;
+                            case "TH": diem += tbTH * comb.weights[index]; break;
+                        }
+                    });
+                    return {
+                        name: comb.name,
+                        diem: diem
+                    };
+                });
+            diemToHop.sort((a, b) => b.diem - a.diem);
+            let resultText = "════════ TƯ VẤN TỔ HỢP MÔN HỌC ════════\n\n";
+            resultText += `📊 Điểm trung bình tất cả các môn: ${tbAll.toFixed(2)}\n\n`;
+            if (diemToHop.length === 0) {
+                resultText += "⚠️ Không tìm thấy tổ hợp môn học nào phù hợp do không đủ môn có điểm từ 6.5 trở lên.\n\n";
+                resultText += "💡 LỜI KHUYÊN: Bạn nên tập trung cải thiện điểm số các môn học chính (Toán, Ngữ văn, Ngoại ngữ, Khoa học tự nhiên, Lịch sử - Địa lý) để đủ điều kiện xét tổ hợp môn học.";
+            } else {
+                resultText += "🏆 TỔ HỢP PHÙ HỢP NHẤT:\n";
+                resultText += `🔹 ${diemToHop[0].name}\n`;
+                resultText += ` Điểm đánh giá: ${diemToHop[0].diem.toFixed(2)}\n\n`;
+                if (diemToHop.length > 1) {
+                    resultText += "🥈 TỔ HỢP PHÙ HỢP THỨ 2:\n";
+                    resultText += `🔹 ${diemToHop[1].name}\n`;
+                    resultText += ` Điểm đánh giá: ${diemToHop[1].diem.toFixed(2)}\n\n`;
+                }
+                resultText += "📊 ĐIỂM TRUNG BÌNH CÁC MÔN:\n";
+                resultText += `- Ngữ văn: ${tbVan.toFixed(2)}\n`;
+                resultText += `- Toán: ${tbToan.toFixed(2)}\n`;
+                resultText += `- Ngoại ngữ: ${tbAnh.toFixed(2)}\n`;
+                resultText += `- Khoa học tự nhiên: ${tbKHTN.toFixed(2)}\n`;
+                resultText += `- Lịch sử - Địa lý: ${tbLSDL.toFixed(2)}\n`;
+                resultText += `- Công nghệ: ${tbCN.toFixed(2)}\n`;
+                resultText += `- Tin học: ${tbTH.toFixed(2)}\n\n`;
+                resultText += "💡 GỢI Ý: Bạn nên ưu tiên chọn tổ hợp có điểm cao nhất phù hợp với năng lực và sở thích của mình. Nếu có thắc mắc, hãy trao đổi thêm với giáo viên chủ nhiệm hoặc chuyên viên hướng nghiệp.\n";
+                 resultText += "CHÚ Ý: Các môn được đề xuất tổ hợp trên là các môn ở chương trình cấp 3.";
+            }
+            document.getElementById("kqtuvan").textContent = resultText;
+        };
+        document.getElementById("xoa").onclick = function() {
+            const inputElements = document.querySelectorAll('.display-box');
+            inputElements.forEach(input => {
+                input.value = "";
+            });
+            document.getElementById("kqtuvan").textContent = "";
+            document.getElementById("fileName").textContent = "Chưa chọn file nào";
+            selectedFile = null;
+        };
+    </script>
+</body>
+</html>
