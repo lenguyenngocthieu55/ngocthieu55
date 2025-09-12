@@ -1,160 +1,398 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>C3 | Chatbot AI Đa Năng</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    body {font-family: 'Calibri', sans-serif; background-color: #0f172a; color: #e2e8f0;}
-    .hide-scrollbar::-webkit-scrollbar {display: none;}
-    .hide-scrollbar {-ms-overflow-style: none; scrollbar-width: none;}
-    .typing-dots::after {content: '...'; animation: typing 1.5s infinite;}
-    @keyframes typing {0%{content: '.';} 33%{content: '..';} 66%{content: '...';}}
-    .user-message {align-self:flex-end;background:#4f46e5;border-radius:1rem;max-width:80%;margin-left:auto;padding:.75rem;margin-bottom:.5rem;}
-    .bot-message {align-self:flex-start;background:#1e293b;border-radius:1rem;max-width:80%;margin-right:auto;padding:.75rem;margin-bottom:.5rem;}
-    .message-content {word-wrap:break-word;white-space:pre-wrap;}
-    .suggestion-chips {display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0;}
-    .suggestion-chip {background:#4f46e5;color:white;padding:.5rem 1rem;border-radius:1rem;cursor:pointer;font-size:.9rem;transition:background .2s;}
-    .suggestion-chip:hover {background:#4338ca;}
-    .university-table {width:100%;border-collapse:collapse;margin:1rem 0;}
-    .university-table th,.university-table td{padding:.5rem;border:1px solid #334155;text-align:left;font-size:.9rem;}
-    .university-table th{background:#1e293b;font-weight:600;}
-    .university-table tr:nth-child(even){background:#1a2332;}
-    #typing-indicator{background:#1e293b;border-radius:1rem;padding:.75rem;margin-bottom:.5rem;max-width:80%;margin-right:auto;}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C3 | Chatbot AI Đa Năng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Calibri', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .typing-dots::after {
+            content: '...';
+            animation: typing 1.5s infinite;
+        }
+        
+        @keyframes typing {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background-color: #4f46e5;
+            border-radius: 1rem;
+            max-width: 80%;
+            margin-left: auto;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .bot-message {
+            align-self: flex-start;
+            background-color: #1e293b;
+            border-radius: 1rem;
+            max-width: 80%;
+            margin-right: auto;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .message-content {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .suggestion-chip {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+        
+        .suggestion-chip:hover {
+            background-color: #4338ca;
+        }
+        
+        .university-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .university-table th, .university-table td {
+            padding: 0.5rem;
+            border: 1px solid #334155;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        
+        .university-table th {
+            background-color: #1e293b;
+            font-weight: 600;
+        }
+        
+        .university-table tr:nth-child(even) {
+            background-color: #1a2332;
+        }
+        
+        .chat-item {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .chat-item:hover {
+            background-color: #334155;
+        }
+        
+        .chat-item.active {
+            background-color: #4f46e5;
+        }
+        
+        .typing-indicator {
+            background-color: #1e293b;
+            border-radius: 1rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            max-width: 80%;
+            margin-right: auto;
+        }
+    </style>
 </head>
 <body class="h-screen flex flex-col bg-gray-900 text-white">
-  <div class="flex flex-1 overflow-hidden">
-    <!-- Sidebar -->
-    <div class="w-64 bg-gray-800 shadow-lg border-r border-gray-700 flex flex-col h-full">
-      <div class="p-3">
-        <button id="new-chat-btn" class="w-10 h-10 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition">
-          <i class="fa-solid fa-file-circle-plus"></i>
-        </button>
-      </div>
-      <div id="chat-history" class="flex-1 overflow-y-auto hide-scrollbar p-2">
-        <div class="text-center p-4 text-gray-400">Chưa có cuộc trò chuyện nào</div>
-      </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden">
-      <header class="p-4 border-b border-gray-700 bg-gray-800">
-        <h1 class="text-xl font-semibold text-left">C3 | Chatbot AI Đa Năng</h1>
-      </header>
-
-      <div id="chat-container" class="flex-1 overflow-y-auto hide-scrollbar p-4 bg-gray-900 flex flex-col gap-3">
-        <div id="chat-messages" class="flex flex-col gap-3 mx-auto max-w-3xl w-full">
-          <div class="bot-message">
-            <div class="message-content">
-              Xin chào! Tôi là Chatbot AI Đa Năng. Tôi có thể giúp bạn tìm hiểu về các trường đại học và nhiều chủ đề khác. Bạn cần hỗ trợ gì?
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <div class="w-64 bg-gray-800 shadow-lg border-r border-gray-700 flex flex-col h-full">
+            <div class="p-3">
+                <button id="new-chat-btn" class="w-10 h-10 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition">
+                    <i class="fa-solid fa-file-circle-plus"></i>
+                </button>
             </div>
-          </div>
+            <div id="chat-history" class="flex-1 overflow-y-auto hide-scrollbar p-2">
+                <div class="text-center p-4 text-gray-400">
+                    Chưa có cuộc trò chuyện nào
+                </div>
+            </div>
         </div>
-      </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col h-full overflow-hidden">
+            <header class="p-4 border-b border-gray-700 bg-gray-800">
+                <h1 class="text-xl font-semibold text-left">C3 | Chatbot AI Đa Năng</h1>
+            </header>
+            
+            <div id="chat-container" class="flex-1 overflow-y-auto hide-scrollbar p-4 bg-gray-900 flex flex-col gap-3">
+                <div id="chat-messages" class="flex flex-col gap-3 mx-auto max-w-3xl w-full">
+                    <div class="bot-message">
+                        <div class="message-content">
+                            Xin chào! Tôi là Chatbot AI Đa Năng. Tôi có thể giúp bạn tìm hiểu về các trường đại học và nhiều chủ đề khác. Bạn cần hỗ trợ gì?
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="typing-indicator" class="hidden max-w-3xl mx-auto">
+                <div class="typing-indicator">
+                    <span class="typing-dots">AI đang suy nghĩ, vui lòng đợi giây lát</span>
+                </div>
+            </div>
 
-      <div id="typing-indicator" class="hidden max-w-3xl mx-auto">
-        <div class="typing-indicator">
-          <span class="typing-dots">AI đang suy nghĩ, vui lòng đợi giây lát</span>
+            <div class="p-4 border-t border-gray-700 bg-gray-800">
+                <div class="max-w-3xl mx-auto">
+                    <div id="suggestions" class="suggestion-chips mb-2">
+                        <div class="suggestion-chip" data-query="Gợi ý trường đại học">🎓 Đại học</div>
+                        <div class="suggestion-chip" data-query="Trường ở Hà Nội">📍 Hà Nội</div>
+                        <div class="suggestion-chip" data-query="Trường ở TP.HCM">📍 TP.HCM</div>
+                        <div class="suggestion-chip" data-query="Trường công lập">🏛️ Công lập</div>
+                    </div>
+                    <form id="chat-form" class="relative">
+                        <textarea 
+                            id="message-input" 
+                            class="w-full p-4 rounded-lg border border-gray-600 bg-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white"
+                            placeholder="Nhập câu hỏi của bạn ở đây..."
+                            rows="1"
+                        ></textarea>
+                        <button type="submit" class="absolute right-2 bottom-2 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-md">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <div class="p-4 border-t border-gray-700 bg-gray-800">
-        <div class="max-w-3xl mx-auto">
-          <div id="suggestions" class="suggestion-chips mb-2">
-            <div class="suggestion-chip" data-query="Gợi ý trường đại học">🎓 Đại học</div>
-            <div class="suggestion-chip" data-query="Trường ở Hà Nội">📍 Hà Nội</div>
-            <div class="suggestion-chip" data-query="Trường ở TP.HCM">📍 TP.HCM</div>
-            <div class="suggestion-chip" data-query="Trường công lập">🏛️ Công lập</div>
-          </div>
-          <form id="chat-form" class="relative">
-            <textarea id="message-input" class="w-full p-4 rounded-lg border border-gray-600 bg-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white" placeholder="Nhập câu hỏi của bạn ở đây..." rows="1"></textarea>
-            <button type="submit" class="absolute right-2 bottom-2 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-md">
-              <i class="fa-solid fa-paper-plane"></i>
-            </button>
-          </form>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <script>
-    const universities = [
-      { name: "Đại học Quốc gia Hà Nội", code: "QHQ", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
-      { name: "Đại học Quốc gia TP.HCM", code: "QSC", area: "TP.HCM", type: "Công lập", rank: "Đại trọng điểm" },
-      { name: "Đại học Bách khoa Hà Nội", code: "BKA", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
-      { name: "Đại học Kinh tế Quốc dân", code: "KTA", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
-      { name: "Đại học Ngoại thương", code: "NTH", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
-      { name: "Đại học FPT", code: "FPT", area: "Nhiều cơ sở", type: "Tư thục", rank: "Tốp đầu tư thục" },
-      { name: "Đại học RMIT", code: "RMI", area: "TP.HCM/Hà Nội", type: "Quốc tế", rank: "Quốc tế" }
-    ];
+    <script>
+        // Danh sách các trường đại học Việt Nam
+        const universities = [
+            { name: "Đại học Quốc gia Hà Nội", code: "QHQ", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Đại học Quốc gia TP.HCM", code: "QSC", area: "TP.HCM", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Đại học Bách khoa Hà Nội", code: "BKA", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Đại học Kinh tế Quốc dân", code: "KTA", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Đại học Ngoại thương", code: "NTH", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Học viện Tài chính", code: "HTC", area: "Hà Nội", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Y Hà Nội", code: "YHB", area: "Hà Nội", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Sư phạm Hà Nội", code: "SPH", area: "Hà Nội", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Bách khoa TP.HCM", code: "BKS", area: "TP.HCM", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Đại học Kinh tế TP.HCM", code: "KTS", area: "TP.HCM", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Sư phạm TP.HCM", code: "SPS", area: "TP.HCM", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Y Dược TP.HCM", code: "YDS", area: "TP.HCM", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Cần Thơ", code: "TCT", area: "Miền Tây", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Đà Nẵng", code: "DDN", area: "Miền Trung", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Huế", code: "DHT", area: "Miền Trung", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học FPT", code: "FPT", area: "Nhiều cơ sở", type: "Tư thục", rank: "Tốp đầu tư thục" },
+            { name: "Đại học RMIT", code: "RMI", area: "TP.HCM/Hà Nội", type: "Quốc tế", rank: "Quốc tế" },
+            { name: "Đại học Tôn Đức Thắng", code: "DTT", area: "TP.HCM", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Học viện Bưu chính Viễn thông", code: "BVN", area: "Hà Nội/TP.HCM", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Giao thông Vận tải", code: "GTA", area: "Hà Nội/TP.HCM", type: "Công lập", rank: "Trọng điểm" }
+        ];
 
-    const chatMessages = document.getElementById('chat-messages');
-    const chatForm = document.getElementById('chat-form');
-    const messageInput = document.getElementById('message-input');
-    const typingIndicator = document.getElementById('typing-indicator');
-    const suggestionChips = document.querySelectorAll('.suggestion-chip');
+        // Các biến toàn cục
+        const chatContainer = document.getElementById('chat-container');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const chatHistory = document.getElementById('chat-history');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const suggestionChips = document.querySelectorAll('.suggestion-chip');
 
-    function scrollToBottom() {
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+        let chats = [];
+        let currentChatId = null;
+        let isSending = false;
 
-    function addMessage(role, content) {
-      const div = document.createElement('div');
-      div.className = role === 'user' ? 'user-message' : 'bot-message';
-      div.innerHTML = `<div class="message-content">${content}</div>`;
-      chatMessages.appendChild(div);
-      scrollToBottom();
-    }
+        // Khởi tạo ứng dụng
+        function initApp() {
+            loadChats();
+            setupEventListeners();
+            setupTextareaAutoResize();
 
-    function generateResponse(message) {
-      message = message.toLowerCase();
-      let filtered = universities;
+            if (chats.length === 0) {
+                createNewChat();
+            } else {
+                loadChat(chats[0].id);
+            }
+        }
 
-      if (message.includes('hà nội')) {
-        filtered = filtered.filter(u => u.area.includes('Hà Nội'));
-      } else if (message.includes('tp.hcm')) {
-        filtered = filtered.filter(u => u.area.includes('TP.HCM'));
-      } else if (message.includes('công lập')) {
-        filtered = filtered.filter(u => u.type === 'Công lập');
-      } else if (message.includes('tư thục')) {
-        filtered = filtered.filter(u => u.type === 'Tư thục');
-      }
+        // Thiết lập event listeners
+        function setupEventListeners() {
+            chatForm.addEventListener('submit', handleSubmit);
+            newChatBtn.addEventListener('click', createNewChat);
+            
+            // Suggestion chips
+            suggestionChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const query = chip.getAttribute('data-query');
+                    messageInput.value = query;
+                    handleSubmit(new Event('submit'));
+                });
+            });
 
-      if (filtered.length === 0) return "Xin lỗi, tôi không tìm thấy trường nào phù hợp.";
+            // Xử lý phím tắt
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (messageInput.value.trim() !== '') {
+                        handleSubmit(e);
+                    }
+                }
+            });
+            
+            // Tự động điều chỉnh chiều cao textarea
+            messageInput.addEventListener('input', autoResizeTextarea);
+        }
 
-      let table = `<div class='overflow-x-auto'><table class='university-table'><thead><tr><th>Tên trường</th><th>Mã</th><th>Khu vực</th><th>Loại</th><th>Xếp hạng</th></tr></thead><tbody>`;
-      filtered.forEach(u => {
-        table += `<tr><td>${u.name}</td><td>${u.code}</td><td>${u.area}</td><td>${u.type}</td><td>${u.rank}</td></tr>`;
-      });
-      table += `</tbody></table></div>`;
-      return table;
-    }
+        // Tự động điều chỉnh chiều cao textarea
+        function autoResizeTextarea() {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = (messageInput.scrollHeight) + 'px';
+        }
 
-    chatForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const msg = messageInput.value.trim();
-      if (!msg) return;
+        // Xử lý gửi tin nhắn
+        function handleSubmit(e) {
+            e.preventDefault();
+            const userMessage = messageInput.value.trim();
+            if (!userMessage || isSending) return;
 
-      addMessage('user', msg);
-      messageInput.value = '';
-      typingIndicator.classList.remove('hidden');
+            if (!currentChatId) {
+                createNewChat();
+            }
 
-      setTimeout(() => {
-        const reply = generateResponse(msg);
-        addMessage('bot', reply);
-        typingIndicator.classList.add('hidden');
-      }, 800);
-    });
+            const currentChat = chats.find(chat => chat.id === currentChatId);
+            if (!currentChat) {
+                console.error("Không tìm thấy cuộc trò chuyện hiện tại!");
+                return;
+            }
 
-    suggestionChips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        messageInput.value = chip.dataset.query;
-        chatForm.dispatchEvent(new Event('submit'));
-      });
-    });
-  </script>
-</body>
-</html>
+            isSending = true;
+            addMessageToUI("user", userMessage);
+            
+            currentChat.messages.push({ 
+                role: "user", 
+                content: userMessage,
+                timestamp: new Date().toISOString()
+            });
+
+            saveChats();
+            updateChatTitle(currentChat);
+
+            messageInput.value = "";
+            autoResizeTextarea();
+            typingIndicator.classList.remove("hidden");
+
+            // Giả lập thời gian phản hồi
+            setTimeout(() => {
+                try {
+                    const response = generateResponse(userMessage);
+                    addMessageToUI("assistant", response);
+                    
+                    currentChat.messages.push({ 
+                        role: "assistant", 
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    saveChats();
+                } catch (error) {
+                    console.error("Lỗi: ", error);
+                    addMessageToUI("assistant", "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại!");
+                } finally {
+                    isSending = false;
+                    typingIndicator.classList.add("hidden");
+                    scrollToBottom();
+                }
+            }, 1000 + Math.random() * 1000);
+        }
+
+        // Thêm tin nhắn vào giao diện
+        function addMessageToUI(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = role === 'user' ? 'user-message' : 'bot-message';
+            
+            const formattedContent = formatMessage(content);
+            messageDiv.innerHTML = `<div class="message-content">${formattedContent}</div>`;
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Định dạng tin nhắn
+        function formatMessage(content) {
+            if (!content) return '';
+            
+            // Xử lý bảng đại học
+            if (content.includes('| Tên trường |')) {
+                return content.replace(/\| Tên trường \| Mã trường \| Khu vực \| Loại hình \| Xếp hạng \|\n\|[-|]+\|\n([\s\S]*)/, 
+                    (match, rows) => {
+                        const tableRows = rows.trim().split('\n');
+                        let tableHTML = `
+                            <div class="overflow-x-auto">
+                                <table class="university-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tên trường</th>
+                                            <th>Mã trường</th>
+                                            <th>Khu vực</th>
+                                            <th>Loại hình</th>
+                                            <th>Xếp hạng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+                        
+                        tableRows.forEach(row => {
+                            const cells = row.split('|').filter(cell => cell.trim() !== '');
+                            if (cells.length === 5) {
+                                tableHTML += `
+                                    <tr>
+                                        <td>${cells[0].trim()}</td>
+                                        <td>${cells[1].trim()}</td>
+                                        <td>${cells[2].trim()}</td>
+                                        <td>${cells[3].trim()}</td>
+                                        <td>${cells[4].trim()}</td>
+                                    </tr>
+                                `;
+                            }
+                        });
+                        
+                        tableHTML += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                        return tableHTML;
+                    }
+                );
+            }
+            
+            // Xử lý in đậm
+            let formatted = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            
+            // Xử lý xu
