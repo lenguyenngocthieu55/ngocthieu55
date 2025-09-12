@@ -6,30 +6,6 @@
     <title>C3 | Chatbot AI Đa Năng</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#4f46e5',
-                        secondary: '#1e1b4b',
-                        dark: {
-                            bg: '#0f172a',
-                            text: '#e2e8f0',
-                            sidebar: '#1e293b',
-                            hover: '#334155'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Calibri', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         body {
             font-family: 'Calibri', sans-serif;
@@ -57,119 +33,6 @@
             66% { content: '...'; }
         }
         
-        .code-block {
-            position: relative;
-            margin: 1rem 0;
-            border-radius: 0.75rem;
-            overflow: hidden;
-            background-color: #1e293b;
-        }
-        
-        .code-header {
-            font-family: monospace;
-            user-select: none;
-        }
-        
-        .copy-code-btn {
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        
-        .copy-code-btn:hover {
-            color: #ffffff;
-        }
-        
-        pre {
-            margin: 0 !important;
-            padding: 1rem !important;
-            background-color: #1e293b !important;
-            border-radius: 0 0 0.75rem 0.75rem;
-        }
-        
-        .markdown p {
-            margin-bottom: 1rem;
-            line-height: 1.6;
-        }
-        
-        .markdown ul, .markdown ol {
-            margin-bottom: 1rem;
-            padding-left: 1.5rem;
-        }
-        
-        .markdown li {
-            margin-bottom: 0.5rem;
-        }
-        
-        .markdown code:not(pre code) {
-            background-color: #334155;
-            padding: 0.2rem 0.4rem;
-            border-radius: 0.25rem;
-            font-family: monospace;
-            color: #e2e8f0;
-        }
-        
-        .markdown strong {
-            font-weight: 600;
-        }
-        
-        .markdown em {
-            font-style: italic;
-        }
-        
-        .markdown h1, .markdown h2, .markdown h3, .markdown h4 {
-            font-weight: 600;
-            margin-top: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .markdown h1 {
-            font-size: 1.5rem;
-            line-height: 2rem;
-        }
-        
-        .markdown h2 {
-            font-size: 1.25rem;
-            line-height: 1.75rem;
-        }
-        
-        .markdown h3 {
-            font-size: 1.125rem;
-            line-height: 1.75rem;
-        }
-        
-        .markdown h4 {
-            font-size: 1rem;
-            line-height: 1.5rem;
-        }
-        
-        .markdown table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-            border-radius: 0.75rem;
-            overflow: hidden;
-        }
-        
-        .markdown th, .markdown td {
-            padding: 0.5rem 1rem;
-            border: 1px solid #334155;
-            text-align: left;
-        }
-        
-        .markdown th {
-            background-color: #1e293b;
-            font-weight: 600;
-        }
-        
-        .markdown blockquote {
-            border-left: 4px solid #475569;
-            padding-left: 1rem;
-            margin: 1rem 0;
-            color: #94a3b8;
-            border-radius: 0.75rem;
-            background-color: rgba(30, 41, 59, 0.5);
-        }
-        
         .user-message {
             align-self: flex-end;
             background-color: #4f46e5;
@@ -177,6 +40,7 @@
             max-width: 80%;
             margin-left: auto;
             padding: 0.75rem;
+            margin-bottom: 0.5rem;
         }
         
         .bot-message {
@@ -186,49 +50,12 @@
             max-width: 80%;
             margin-right: auto;
             padding: 0.75rem;
-        }
-        
-        .typing-indicator {
-            align-self: flex-start;
-            background-color: #1e293b;
-            border-radius: 1rem;
-            max-width: 80%;
-            margin-right: auto;
-            padding: 0.75rem;
+            margin-bottom: 0.5rem;
         }
         
         .message-content {
             word-wrap: break-word;
             white-space: pre-wrap;
-            border-radius: 0.5rem;
-            padding: 0.5rem;
-        }
-        
-        .transition-all {
-            transition-property: all;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-            transition-duration: 150ms;
-        }
-        
-        .university-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-        }
-        
-        .university-table th, .university-table td {
-            padding: 0.75rem;
-            border: 1px solid #334155;
-            text-align: left;
-        }
-        
-        .university-table th {
-            background-color: #1e293b;
-            font-weight: 600;
-        }
-        
-        .university-table tr:nth-child(even) {
-            background-color: #1a2332;
         }
         
         .suggestion-chips {
@@ -251,51 +78,94 @@
         .suggestion-chip:hover {
             background-color: #4338ca;
         }
+        
+        .university-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .university-table th, .university-table td {
+            padding: 0.5rem;
+            border: 1px solid #334155;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        
+        .university-table th {
+            background-color: #1e293b;
+            font-weight: 600;
+        }
+        
+        .university-table tr:nth-child(even) {
+            background-color: #1a2332;
+        }
+        
+        .chat-item {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .chat-item:hover {
+            background-color: #334155;
+        }
+        
+        .chat-item.active {
+            background-color: #4f46e5;
+        }
+        
+        #typing-indicator {
+            background-color: #1e293b;
+            border-radius: 1rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            max-width: 80%;
+            margin-right: auto;
+        }
     </style>
 </head>
-<body class="h-screen flex flex-col bg-dark-bg text-dark-text transition-all">
-
-    <div id="app" class="flex flex-1 overflow-hidden">
-
-        <div id="sidebar" class="w-48 bg-dark-sidebar shadow-lg border-r border-gray-700 flex flex-col h-full">
-
+<body class="h-screen flex flex-col bg-gray-900 text-white">
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <div class="w-64 bg-gray-800 shadow-lg border-r border-gray-700 flex flex-col h-full">
             <div class="p-3">
-                <button id="new-chat-btn" class="w-10 h-10 flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-md transition">
+                <button id="new-chat-btn" class="w-10 h-10 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition">
                     <i class="fa-solid fa-file-circle-plus"></i>
                 </button>
             </div>
-            
-
             <div id="chat-history" class="flex-1 overflow-y-auto hide-scrollbar p-2">
-
+                <div class="text-center p-4 text-gray-400">
+                    Chưa có cuộc trò chuyện nào
+                </div>
             </div>
         </div>
         
-
+        <!-- Main Content -->
         <div class="flex-1 flex flex-col h-full overflow-hidden">
-
-            <header class="p-4 border-b border-gray-700 bg-dark-bg">
+            <header class="p-4 border-b border-gray-700 bg-gray-800">
                 <h1 class="text-xl font-semibold text-left">C3 | Chatbot AI Đa Năng</h1>
             </header>
             
-
             <div id="chat-container" class="flex-1 overflow-y-auto hide-scrollbar p-4 bg-gray-900 flex flex-col gap-3">
                 <div id="chat-messages" class="flex flex-col gap-3 mx-auto max-w-3xl w-full">
-
+                    <div class="bot-message">
+                        <div class="message-content">
+                            Xin chào! Tôi là Chatbot AI Đa Năng. Tôi có thể giúp bạn tìm hiểu về các trường đại học và nhiều chủ đề khác. Bạn cần hỗ trợ gì?
+                        </div>
+                    </div>
                 </div>
             </div>
             
-
-            <div id="typing-indicator" class="hidden max-w-3xl mx-auto p-4 mb-4">
-                <span class="typing-dots">AI đang suy nghĩ, vui lòng đợi giây lát</span>
-            </div>
-            <div id="stop-button-container" class="hidden max-w-3xl mx-auto p-4 mb-4">
-                <button id="stop-response-btn" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm">
-                    Dừng
-                </button>
+            <div id="typing-indicator" class="hidden max-w-3xl mx-auto">
+                <div class="typing-indicator">
+                    <span class="typing-dots">AI đang suy nghĩ, vui lòng đợi giây lát</span>
+                </div>
             </div>
 
-            <div class="p-4 border-t border-gray-700 bg-dark-bg">
+            <div class="p-4 border-t border-gray-700 bg-gray-800">
                 <div class="max-w-3xl mx-auto">
                     <div id="suggestions" class="suggestion-chips mb-2">
                         <div class="suggestion-chip" data-query="Gợi ý trường đại học">🎓 Đại học</div>
@@ -306,11 +176,11 @@
                     <form id="chat-form" class="relative">
                         <textarea 
                             id="message-input" 
-                            class="w-full p-4 rounded-lg border border-gray-600 bg-dark-hover resize-none focus:outline-none focus:ring-2 focus:ring-primary text-white"
+                            class="w-full p-4 rounded-lg border border-gray-600 bg-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white"
                             placeholder="Nhập câu hỏi của bạn ở đây..."
                             rows="1"
                         ></textarea>
-                        <button type="submit" class="absolute right-2 bottom-2 bg-primary hover:bg-primary/90 text-white p-2 rounded-md">
+                        <button type="submit" class="absolute right-2 bottom-2 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-md">
                             <i class="fa-solid fa-paper-plane"></i>
                         </button>
                     </form>
@@ -318,7 +188,6 @@
             </div>
         </div>
     </div>
-    
 
     <script>
         // Danh sách các trường đại học Việt Nam
@@ -345,49 +214,183 @@
             { name: "Đại học Giao thông Vận tải", code: "GTA", area: "Hà Nội/TP.HCM", type: "Công lập", rank: "Trọng điểm" }
         ];
 
-        class UniversityAI {
-            constructor() {
-                this.conversationHistory = [];
+        // Các biến toàn cục
+        const chatContainer = document.getElementById('chat-container');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const chatHistory = document.getElementById('chat-history');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const suggestionChips = document.querySelectorAll('.suggestion-chip');
+
+        let chats = [];
+        let currentChatId = null;
+        let isSending = false;
+
+        // Khởi tạo ứng dụng
+        function initApp() {
+            loadChats();
+            setupEventListeners();
+            setupTextareaAutoResize();
+
+            if (chats.length === 0) {
+                createNewChat();
+            } else {
+                loadChat(chats[0].id);
+            }
+        }
+
+        // Thiết lập event listeners
+        function setupEventListeners() {
+            chatForm.addEventListener('submit', handleSubmit);
+            newChatBtn.addEventListener('click', createNewChat);
+            
+            // Suggestion chips
+            suggestionChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const query = chip.getAttribute('data-query');
+                    messageInput.value = query;
+                    handleSubmit(new Event('submit'));
+                });
+            });
+
+            // Xử lý phím tắt
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (messageInput.value.trim() !== '') {
+                        handleSubmit(e);
+                    }
+                }
+            });
+            
+            // Tự động điều chỉnh chiều cao textarea
+            messageInput.addEventListener('input', autoResizeTextarea);
+        }
+
+        // Tự động điều chỉnh chiều cao textarea
+        function autoResizeTextarea() {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = (messageInput.scrollHeight) + 'px';
+        }
+
+        // Xử lý gửi tin nhắn
+        function handleSubmit(e) {
+            e.preventDefault();
+            const userMessage = messageInput.value.trim();
+            if (!userMessage || isSending) return;
+
+            if (!currentChatId) {
+                createNewChat();
             }
 
-            async processQuery(userInput) {
-                // Giả lập thời gian xử lý
-                await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700));
-                
-                const input = userInput.toLowerCase();
-                
-                // Xử lý các câu hỏi về trường đại học
-                if (input.includes("đại học") || input.includes("trường") || input.includes("học viện") || 
-                    input.includes("tuyển sinh") || input.includes("điểm chuẩn") || input.includes("đh")) {
+            const currentChat = chats.find(chat => chat.id === currentChatId);
+            if (!currentChat) {
+                console.error("Không tìm thấy cuộc trò chuyện hiện tại!");
+                return;
+            }
+
+            isSending = true;
+            addMessageToUI("user", userMessage);
+            
+            currentChat.messages.push({ 
+                role: "user", 
+                content: userMessage,
+                timestamp: new Date().toISOString()
+            });
+
+            saveChats();
+            updateChatTitle(currentChat);
+
+            messageInput.value = "";
+            autoResizeTextarea();
+            typingIndicator.classList.remove("hidden");
+
+            // Giả lập thời gian phản hồi
+            setTimeout(() => {
+                try {
+                    const response = generateResponse(userMessage);
+                    addMessageToUI("assistant", response);
                     
-                    return this.handleUniversityQuery(input);
+                    currentChat.messages.push({ 
+                        role: "assistant", 
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    saveChats();
+                } catch (error) {
+                    console.error("Lỗi: ", error);
+                    addMessageToUI("assistant", "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại!");
+                } finally {
+                    isSending = false;
+                    typingIndicator.classList.add("hidden");
+                    scrollToBottom();
                 }
-                
-                // Xử lý các câu hỏi thông thường khác
-                return this.handleGeneralQuery(input);
-            }
+            }, 1000 + Math.random() * 1000);
+        }
 
-            handleUniversityQuery(input) {
-                let response = "";
-                let filteredUnis = [];
-                
-                // Tìm kiếm theo khu vực
-                if (input.includes("hà nội") || input.includes("hn")) {
-                    filteredUnis = universities.filter(uni => uni.area.includes("Hà Nội"));
-                    response = this.formatUniversityResponse("Các trường đại học tại Hà Nội:", filteredUnis);
-                }
-                else if (input.includes("hồ chí minh") || input.includes("tphcm") || input.includes("sài gòn") || input.includes("hcm")) {
-                    filteredUnis = universities.filter(uni => uni.area.includes("TP.HCM"));
-                    response = this.formatUniversityResponse("Các trường đại học tại TP.HCM:", filteredUnis);
-                }
-                else if (input.includes("miền trung")) {
-                    filteredUnis = universities.filter(uni => uni.area.includes("Miền Trung"));
-                    response = this.formatUniversityResponse("Các trường đại học miền Trung:", filteredUnis);
-                }
-                else if (input.includes("công lập")) {
-                    filteredUnis = universities.filter(uni => uni.type === "Công lập");
-                    response = this.formatUniversityResponse("Các trường đại học công lập:", filteredUnis);
-                }
-                else if (input.includes("tư thục") || input.includes("dân lập")) {
-                    filteredUnis = universities.filter(uni => uni.type === "Tư thục");
-                    response = this.formatUniversityResponse("Các trường đại học tư thục:", filteredUnis
+        // Thêm tin nhắn vào giao diện
+        function addMessageToUI(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = role === 'user' ? 'user-message' : 'bot-message';
+            
+            const formattedContent = formatMessage(content);
+            messageDiv.innerHTML = `<div class="message-content">${formattedContent}</div>`;
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Định dạng tin nhắn
+        function formatMessage(content) {
+            if (!content) return '';
+            
+            // Xử lý bảng đại học
+            if (content.includes('| Tên trường |')) {
+                return content.replace(/\| Tên trường \| Mã trường \| Khu vực \| Loại hình \| Xếp hạng \|\n\|[-|]+\|\n([\s\S]*)/, 
+                    (match, rows) => {
+                        const tableRows = rows.trim().split('\n');
+                        let tableHTML = `
+                            <div class="overflow-x-auto">
+                                <table class="university-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tên trường</th>
+                                            <th>Mã trường</th>
+                                            <th>Khu vực</th>
+                                            <th>Loại hình</th>
+                                            <th>Xếp hạng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+                        
+                        tableRows.forEach(row => {
+                            const cells = row.split('|').filter(cell => cell.trim() !== '');
+                            if (cells.length === 5) {
+                                tableHTML += `
+                                    <tr>
+                                        <td>${cells[0].trim()}</td>
+                                        <td>${cells[1].trim()}</td>
+                                        <td>${cells[2].trim()}</td>
+                                        <td>${cells[3].trim()}</td>
+                                        <td>${cells[4].trim()}</td>
+                                    </tr>
+                                `;
+                            }
+                        });
+                        
+                        tableHTML += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                        return tableHTML;
+                    }
+                );
+            }
+            
+            // Xử lý in đậm
+            let formatted = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
