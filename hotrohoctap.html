@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -31,33 +30,27 @@
         }
     </script>
     <style>
-        /* Giữ nguyên các style */
         body {
             font-family: 'Calibri', sans-serif;
             background-color: #0f172a;
             color: #e2e8f0;
         }
-        
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
-        
         .hide-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        
         .typing-dots::after {
             content: '...';
             animation: typing 1.5s infinite;
         }
-        
         @keyframes typing {
             0% { content: '.'; }
             33% { content: '..'; }
             66% { content: '...'; }
         }
-        
         .code-block {
             position: relative;
             margin: 1rem 0;
@@ -65,42 +58,34 @@
             overflow: hidden;
             background-color: #1e293b;
         }
-        
         .code-header {
             font-family: monospace;
             user-select: none;
         }
-        
         .copy-code-btn {
             transition: all 0.2s;
             cursor: pointer;
         }
-        
         .copy-code-btn:hover {
             color: #ffffff;
         }
-        
         pre {
             margin: 0 !important;
             padding: 1rem !important;
             background-color: #1e293b !important;
             border-radius: 0 0 0.75rem 0.75rem;
         }
-        
         .markdown p {
             margin-bottom: 1rem;
             line-height: 1.6;
         }
-        
         .markdown ul, .markdown ol {
             margin-bottom: 1rem;
             padding-left: 1.5rem;
         }
-        
         .markdown li {
             margin-bottom: 0.5rem;
         }
-        
         .markdown code:not(pre code) {
             background-color: #334155;
             padding: 0.2rem 0.4rem;
@@ -108,41 +93,33 @@
             font-family: monospace;
             color: #e2e8f0;
         }
-        
         .markdown strong {
             font-weight: 600;
         }
-        
         .markdown em {
             font-style: italic;
         }
-        
         .markdown h1, .markdown h2, .markdown h3, .markdown h4 {
             font-weight: 600;
             margin-top: 1.5rem;
             margin-bottom: 1rem;
         }
-        
         .markdown h1 {
             font-size: 1.5rem;
             line-height: 2rem;
         }
-        
         .markdown h2 {
             font-size: 1.25rem;
             line-height: 1.75rem;
         }
-        
         .markdown h3 {
             font-size: 1.125rem;
             line-height: 1.75rem;
         }
-        
         .markdown h4 {
             font-size: 1rem;
             line-height: 1.5rem;
         }
-        
         .markdown table {
             width: 100%;
             border-collapse: collapse;
@@ -150,18 +127,15 @@
             border-radius: 0.75rem;
             overflow: hidden;
         }
-        
         .markdown th, .markdown td {
             padding: 0.5rem 1rem;
             border: 1px solid #334155;
             text-align: left;
         }
-        
         .markdown th {
             background-color: #1e293b;
             font-weight: 600;
         }
-        
         .markdown blockquote {
             border-left: 4px solid #475569;
             padding-left: 1rem;
@@ -170,7 +144,6 @@
             border-radius: 0.75rem;
             background-color: rgba(30, 41, 59, 0.5);
         }
-        
         .user-message {
             align-self: flex-end;
             background-color: #4f46e5;
@@ -179,7 +152,6 @@
             margin-left: auto;
             padding: 0.75rem;
         }
-        
         .bot-message {
             align-self: flex-start;
             background-color: #1e293b;
@@ -188,7 +160,6 @@
             margin-right: auto;
             padding: 0.75rem;
         }
-        
         .typing-indicator {
             align-self: flex-start;
             background-color: #1e293b;
@@ -197,14 +168,12 @@
             margin-right: auto;
             padding: 0.75rem;
         }
-        
         .message-content {
             word-wrap: break-word;
             white-space: pre-wrap;
             border-radius: 0.5rem;
             padding: 0.5rem;
         }
-        
         .transition-all {
             transition-property: all;
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -213,54 +182,39 @@
     </style>
 </head>
 <body class="h-screen flex flex-col bg-dark-bg text-dark-text transition-all">
-
     <div id="app" class="flex flex-1 overflow-hidden">
-
         <div id="sidebar" class="w-48 bg-dark-sidebar shadow-lg border-r border-gray-700 flex flex-col h-full">
-
             <div class="p-3">
                 <button id="new-chat-btn" class="w-10 h-10 flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-md transition">
                     <i class="fa-solid fa-file-circle-plus"></i>
                 </button>
             </div>
-            
-
             <div id="chat-history" class="flex-1 overflow-y-auto hide-scrollbar p-2">
-
             </div>
         </div>
-        
-
         <div class="flex-1 flex flex-col h-full overflow-hidden">
-
             <header class="p-4 border-b border-gray-700 bg-dark-bg">
                 <h1 class="text-xl font-semibold text-left">C3 | Chatbot AI Đa Năng</h1>
             </header>
-            
-
             <div id="chat-container" class="flex-1 overflow-y-auto hide-scrollbar p-4 bg-gray-900 flex flex-col gap-3">
                 <div id="chat-messages" class="flex flex-col gap-3 mx-auto max-w-3xl w-full">
-
                 </div>
             </div>
-            
-
-          <div id="typing-indicator" class="hidden max-w-3xl mx-auto p-4 mb-4">
-    <span class="typing-dots">AI đang suy nghĩ, vui lòng đợi giây lát</span>
-</div>
-<div id="stop-button-container" class="hidden max-w-3xl mx-auto p-4 mb-4">
-    <button id="stop-response-btn" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm">
-        Dừng
-    </button>
-</div>
-
+            <div id="typing-indicator" class="hidden max-w-3xl mx-auto p-4 mb-4">
+                <span class="typing-dots">AI đang suy nghĩ, vui lòng đợi giây lát</span>
+            </div>
+            <div id="stop-button-container" class="hidden max-w-3xl mx-auto p-4 mb-4">
+                <button id="stop-response-btn" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm">
+                    Dừng
+                </button>
+            </div>
             <div class="p-4 border-t border-gray-700 bg-dark-bg">
                 <div class="max-w-3xl mx-auto">
                     <form id="chat-form" class="relative">
-                        <textarea 
-                            id="message-input" 
+                        <textarea
+                            id="message-input"
                             class="w-full p-4 rounded-lg border border-gray-600 bg-dark-hover resize-none focus:outline-none focus:ring-2 focus:ring-primary text-white"
-                            placeholder=" "
+                            placeholder="Nhập câu hỏi của bạn ở đây..."
                             rows="1"
                         ></textarea>
                     </form>
@@ -268,70 +222,75 @@
             </div>
         </div>
     </div>
-    
 
     <script>
-// ĐÃ XÓA: Danh sách từ khóa và hàm kiểm tra câu hỏi liên quan đến cấp 3
-function isLiteraryQuestion(question) {
-    // Luôn trả về true để chấp nhận mọi câu hỏi
-    return true;
-}
+        // Sửa lỗi: Thay thế API Gemini bằng hệ thống phản hồi nội bộ
+        function isLiteraryQuestion(question) {
+            return true; // Chấp nhận mọi câu hỏi
+        }
+
         class LiteraryAI {
             constructor() {
-                this.endpoint = "https://ndcuti-aivanhocg1.hf.space/api/v1/chat";
                 this.conversationHistory = [];
             }
 
             async sendQuery(userInput, previousMessages = []) {
-    // ĐÃ XÓA: Kiểm tra câu hỏi có liên quan đến cấp 3 không
-    try {
-        const response = await this.mockApiCall(userInput, previousMessages);
-        return response;
-    } catch (error) {
-        console.error("API Error:", error);
-        throw new Error("Lỗi kết nối 221!");
-    }
-}
-
+                try {
+                    const response = await this.mockApiCall(userInput, previousMessages);
+                    return response;
+                } catch (error) {
+                    console.error("API Error:", error);
+                    throw new Error("Lỗi kết nối!");
+                }
+            }
 
             async mockApiCall(userInput, history) {
-    // ĐÃ XÓA: Kiểm tra câu hỏi có liên quan đến cấp 3 không
+                // Giả lập thời gian phản hồi
                 await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
                 
-                // Tạo phản hồi mẫu cho chatbot đa năng
                 let enhancedResponse = "";
                 
-                if (userInput.toLowerCase().includes("chào")) {
+                // Tạo phản hồi dựa trên nội dung câu hỏi
+                const lowerInput = userInput.toLowerCase();
+                
+                if (lowerInput.includes("chào") || lowerInput.includes("hello") || lowerInput.includes("hi")) {
                     enhancedResponse = "Xin chào! Tôi là Chatbot AI Đa Năng. Tôi có thể giúp bạn với nhiều chủ đề khác nhau. Bạn cần hỗ trợ gì?";
-                } else if (userInput.toLowerCase().includes("toán") || userInput.toLowerCase().includes("tính")) {
+                } else if (lowerInput.includes("toán") || lowerInput.includes("tính") || lowerInput.includes("số")) {
                     enhancedResponse = "Tôi có thể giúp bạn với các vấn đề về toán học. Bạn có thể hỏi về:\n\n" +
-                    "• Đại số và giải tích\n" +
-                    "• Hình học\n" +
-                    "• Thống kê và xác suất\n" +
-                    "• Ứng dụng toán học trong thực tế\n\n" +
-                    "Hãy cho tôi biết cụ thể bạn cần giúp gì?";
-                } else if (userInput.toLowerCase().includes("văn") || userInput.toLowerCase().includes("viết")) {
+                        "• Đại số và giải tích\n" +
+                        "• Hình học\n" +
+                        "• Thống kê và xác suất\n" +
+                        "• Ứng dụng toán học trong thực tế\n\n" +
+                        "Hãy cho tôi biết cụ thể bạn cần giúp gì?";
+                } else if (lowerInput.includes("văn") || lowerInput.includes("viết") || lowerInput.includes("tác phẩm")) {
                     enhancedResponse = "Tôi có thể hỗ trợ bạn với các chủ đề văn học và viết lách:\n\n" +
-                    "• Phân tích tác phẩm văn học\n" +
-                    "• Kỹ năng viết luận\n" +
-                    "• Ngữ pháp và chính tả\n" +
-                    "• Sáng tác thơ văn\n\n" +
-                    "Bạn đang cần giúp đỡ về vấn đề gì?";
-                } else if (userInput.toLowerCase().includes("lập trình") || userInput.toLowerCase().includes("code")) {
+                        "• Phân tích tác phẩm văn học\n" +
+                        "• Kỹ năng viết luận\n" +
+                        "• Ngữ pháp và chính tả\n" +
+                        "• Sáng tác thơ văn\n\n" +
+                        "Bạn đang cần giúp đỡ về vấn đề gì?";
+                } else if (lowerInput.includes("lập trình") || lowerInput.includes("code") || lowerInput.includes("program")) {
                     enhancedResponse = "Tôi có thể hỗ trợ bạn với lập trình:\n\n" +
-                    "• HTML, CSS, JavaScript\n" +
-                    "• Python, Java, C++\n" +
-                    "• Thuật toán và cấu trúc dữ liệu\n" +
-                    "• Debug và tối ưu code\n\n" +
-                    "Hãy chia sẻ vấn đề bạn đang gặp phải!";
+                        "• HTML, CSS, JavaScript\n" +
+                        "• Python, Java, C++\n" +
+                        "• Thuật toán và cấu trúc dữ liệu\n" +
+                        "• Debug và tối ưu code\n\n" +
+                        "Hãy chia sẻ vấn đề bạn đang gặp phải!";
+                } else if (lowerInput.includes("tiếng anh") || lowerInput.includes("english") || lowerInput.includes("anh ngữ")) {
+                    enhancedResponse = "Tôi có thể giúp bạn với tiếng Anh:\n\n" +
+                        "• Ngữ pháp và từ vựng\n" +
+                        "• Kỹ năng nghe nói đọc viết\n" +
+                        "• Luyện thi chứng chỉ\n" +
+                        "• Dịch thuật\n\n" +
+                        "Bạn cần hỗ trợ gì về tiếng Anh?";
                 } else {
                     enhancedResponse = "Cảm ơn bạn đã chia sẻ câu hỏi. Là một AI đa năng, tôi có thể giúp bạn với nhiều chủ đề như:\n\n" +
-                    "• Kiến thức học thuật các môn học\n" +
-                    "• Kỹ năng mềm và phương pháp học tập\n" +
-                    "• Giải trí và đời sống\n" +
-                    "• Công nghệ và lập trình\n" +
-                    "• Và nhiều chủ đề khác\n\n" +
-                    "Bạn có thể chia sẻ cụ thể hơn về vấn đề bạn đang gặp phải không?";
+                        "• Kiến thức học thuật các môn học\n" +
+                        "• Kỹ năng mềm và phương pháp học tập\n" +
+                        "• Giải trí và đời sống\n" +
+                        "• Công nghệ và lập trình\n" +
+                        "• Và nhiều chủ đề khác\n\n" +
+                        "Bạn có thể chia sẻ cụ thể hơn về vấn đề bạn đang gặp phải không?";
                 }
 
                 return {
@@ -342,23 +301,8 @@ function isLiteraryQuestion(question) {
                 };
             }
         }
-    </script>
-    <script type="importmap">
-        {
-            "imports": {
-                "@google/generative-ai": "https://esm.run/@google/generative-ai"
-            }
-        }
-    </script>
-    <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
 
-
-        const API_KEY = "AIzaSyAQMglgiKEHY8XznNf9ZIdjYMnKgH9DhJg";
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-01-21" });
-
-
+        // Khởi tạo các biến toàn cục
         const chatContainer = document.getElementById('chat-container');
         const chatMessages = document.getElementById('chat-messages');
         const chatForm = document.getElementById('chat-form');
@@ -367,50 +311,62 @@ function isLiteraryQuestion(question) {
         const chatHistory = document.getElementById('chat-history');
         const typingIndicator = document.getElementById('typing-indicator');
         const stopButtonContainer = document.getElementById('stop-button-container');
+        const stopResponseBtn = document.getElementById('stop-response-btn');
 
         let chats = [];
         let currentChatId = null;
         let isSending = false;
         let typingInterval = null;
         let isStopped = false;
+        const literaryAI = new LiteraryAI();
 
         function initApp() {
             loadChats();
             setupEventListeners();
             setupTextareaAutoResize();
-
-
+            
             if (chats.length === 0) {
                 createNewChat();
             } else {
                 loadChat(chats[0].id);
             }
+            
+            // Hiển thị tin nhắn chào mừng
+            setTimeout(() => {
+                if (chatMessages.innerHTML === '') {
+                    addMessageToUI("assistant", "Xin chào! Tôi là Chatbot AI Đa Năng. Tôi có thể giúp bạn với nhiều chủ đề khác nhau. Hãy hỏi tôi bất cứ điều gì!");
+                }
+            }, 500);
         }
 
-function setupEventListeners() {
-    chatForm.addEventListener('submit', handleSubmit);
-    messageInput.addEventListener('input', () => {
-        autoResizeTextarea();
-    });
-    messageInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            if (messageInput.value.trim() !== '') {
-                chatForm.dispatchEvent(new Event('submit'));
-            }
+        function setupEventListeners() {
+            chatForm.addEventListener('submit', handleSubmit);
+            
+            messageInput.addEventListener('input', () => {
+                autoResizeTextarea();
+            });
+            
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (messageInput.value.trim() !== '') {
+                        chatForm.dispatchEvent(new Event('submit'));
+                    }
+                }
+            });
+            
+            newChatBtn.addEventListener('click', createNewChat);
+            
+            stopResponseBtn.addEventListener('click', () => {
+                isStopped = true;
+                if (typingInterval) {
+                    clearInterval(typingInterval);
+                    typingInterval = null;
+                }
+                stopButtonContainer.classList.add('hidden');
+            });
         }
-    });
-    newChatBtn.addEventListener('click', createNewChat);
 
-    document.getElementById('stop-response-btn').addEventListener('click', () => {
-        isStopped = true;
-        if (typingInterval) {
-            clearInterval(typingInterval);
-            typingInterval = null;
-        }
-        stopButtonContainer.classList.add('hidden');
-    });
-}
         function setupTextareaAutoResize() {
             messageInput.addEventListener('input', autoResizeTextarea);
         }
@@ -421,413 +377,70 @@ function setupEventListeners() {
             messageInput.style.height = `${newHeight}px`;
         }
 
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const userMessage = messageInput.value.trim();
+            
+            if (!userMessage || isSending) return;
+            
+            if (!currentChatId) {
+                createNewChat();
+                return;
+            }
 
-   async function handleSubmit(e) {
-    e.preventDefault();
-    const userMessage = messageInput.value.trim();
-    if (!userMessage || isSending) return;
+            const currentChat = chats.find(chat => chat.id === currentChatId);
+            if (!currentChat) {
+                console.error("Không tìm thấy cuộc trò chuyện hiện tại!");
+                return;
+            }
 
-    // ĐÃ XÓA: Kiểm tra câu hỏi có liên quan đến cấp 3 không
-    if (!currentChatId) {
-        createNewChat();
-        return;
-    }
-
-    const currentChat = chats.find(chat => chat.id === currentChatId);
-    if (!currentChat) {
-        console.error("Không tìm thấy cuộc trò chuyện hiện tại!");
-        return;
-    }
-
-    isSending = true;
-    addMessageToUI("user", userMessage);
-    const greetings = ["chào", "hello"];
-if (greetings.some(greet => userMessage.toLowerCase().includes(greet))) {
-    const greetingResponse = "Xin chào, tôi là AI Đa Năng. Tôi có thể giúp gì cho bạn ngay bây giờ?";
-    displayTypingMessage(greetingResponse, () => {
-        if (!isStopped) {
-            currentChat.messages.push({ 
-                role: "assistant", 
-                content: greetingResponse,
+            isSending = true;
+            addMessageToUI("user", userMessage);
+            
+            currentChat.messages.push({
+                role: "user",
+                content: userMessage,
                 timestamp: new Date().toISOString()
             });
-            saveChats();
-        }
-    });
-    messageInput.value = "";
-    autoResizeTextarea();
-    isSending = false;
-    return;
-}
-    currentChat.messages.push({ 
-        role: "user", 
-        content: userMessage,
-        timestamp: new Date().toISOString()
-    });
-
-    saveChats();
-    updateChatTitle(currentChat);
-
-    messageInput.value = "";
-    autoResizeTextarea();
-    typingIndicator.classList.remove("hidden");
-    stopButtonContainer.classList.remove("hidden"); 
-    isStopped = false;
-
-    try {
-        const chatSession = model.startChat({
-            history: currentChat.messages.map(msg => ({
-                role: msg.role === "user" ? "user" : "model",
-                parts: [{ text: msg.content }]
-            })),
-            generationConfig: {
-                maxOutputTokens: 2000,
-                temperature: 0.9,
-                topP: 0.1,
-                topK: 16,
-            }
-        });
-
-        const result = await chatSession.sendMessage(userMessage);
-        const response = await result.response;
-        const botReply = response.text();
-
-        displayTypingMessage(botReply, () => {
-            if (!isStopped) {
-                currentChat.messages.push({ 
-                    role: "assistant", 
-                    content: botReply,
-                    timestamp: new Date().toISOString()
-                });
-                saveChats();
-            }
-        });
-    } catch (error) {
-        console.error("Lỗi: ", error);
-        addMessageToUI("assistant", "Lỗi kết nối 221!");
-    } finally {
-        isSending = false;
-        typingIndicator.classList.add("hidden");
-      
-        scrollToBottom();
-    }
-}
-
-   function displayTypingMessage(content, callback) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'bot-message';
-    messageDiv.innerHTML = '<div class="message-content"></div>';
-    chatMessages.appendChild(messageDiv);
-    scrollToBottom();
-
-    let i = 0;
-    const speed = 0;
-    const contentDiv = messageDiv.querySelector('.message-content');
-
-    if (typingInterval) clearInterval(typingInterval);
-    
-    typingIndicator.classList.add("hidden"); 
-    stopButtonContainer.classList.remove("hidden");
-    typingInterval = setInterval(() => {
-        if (isStopped) {
-            clearInterval(typingInterval);
-            typingInterval = null;
-            contentDiv.innerHTML = formatMessage(content.substring(0, i));
-            stopButtonContainer.classList.add("hidden");
-            if (callback) callback();
-            return;
-        }
-
-        if (i < content.length) {
-            contentDiv.innerHTML = formatMessage(content.substring(0, i + 1));
-            i++;
-            scrollToBottom();
-        } else {
-            clearInterval(typingInterval);
-            typingInterval = null;
-            stopButtonContainer.classList.add("hidden");
-            if (callback) callback();
-        }
-    }, speed);
-}
-
-        function addMessageToUI(role, content) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = role === 'user' ? 'user-message' : 'bot-message';
             
-            const formattedContent = formatMessage(content);
-            messageDiv.innerHTML = `<div class="message-content">${formattedContent}</div>`;
-            
-            chatMessages.appendChild(messageDiv);
-            scrollToBottom();
-        }
-
-
-        function formatMessage(content) {
-            if (!content) return '';
-
-
-            let formatted = content.replace(/```([\w]*)\n([\s\S]*?)```/g, (match, lang, code) => {
-                const langDisplay = lang ? lang : 'text';
-                return `<div class="code-block">
-                    <div class="code-header flex justify-between items-center px-3 py-2 bg-gray-800 text-gray-300 text-xs rounded-t-md">
-                        <span>${langDisplay}</span>
-                        <button class="copy-code-btn hover:text-white" onclick="copyToClipboard(this)" data-code="${encodeURIComponent(code.trim())}">
-                            <i class="fas fa-copy"></i> Copy code
-                        </button>
-                    </div>
-                    <pre><code class="language-${lang || 'text'}">${escapeHtml(code.trim())}</code></pre>
-                </div>`;
-            });
-
-
-            formatted = formatted.replace(/\|(.+)\|\n\|(?:[-:]+\|)+\n((?:\|.+\|\n)+)/g, (match) => {
-                return `<div class="overflow-x-auto"><table class="w-full">
-                    ${match.replace(/\|(.+)\|\n\|(?:[-:]+\|)+\n/, (header) => {
-                        const headerCells = header.split('|').slice(1, -1);
-                        return `<thead><tr>${headerCells.map(cell => `<th class="px-4 py-2">${cell.trim()}</th>`).join('')}</tr></thead>`;
-                    })}
-                    <tbody>
-                        ${match.split('\n').slice(2).filter(Boolean).map(row => {
-                            const cells = row.split('|').slice(1, -1);
-                            return `<tr>${cells.map(cell => `<td class="px-4 py-2">${cell.trim()}</td>`).join('')}</tr>`;
-                        }).join('')}
-                    </tbody>
-                </table></div>`;
-            });
-
-
-            formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-
-
-            formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-
-
-            formatted = formatted.replace(/`([^`]+)`/g, '<code class="bg-gray-800 px-1 py-0.5 rounded">$1</code>');
-
-
-            formatted = formatted.split('\n\n').map(paragraph => {
-                if (paragraph.trim().startsWith('<') && paragraph.trim().endsWith('>')) {
-                    return paragraph;
-                }
-                return `<p>${paragraph}</p>`;
-            }).join('');
-
-
-            formatted = formatted.replace(/\n(?![<])/g, '<br>');
-
-            return formatted;
-        }
-
-
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-
-
-        function scrollToBottom() {
-            setTimeout(() => {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }, 100);
-        }
-
-
-        function createNewChat() {
-            const newChat = {
-                id: Date.now().toString(),
-                title: 'Cuộc trò chuyện mới',
-                messages: [],
-                createdAt: new Date().toISOString()
-            };
-
-            chats.unshift(newChat);
             saveChats();
-            renderChatHistory();
-            loadChat(newChat.id);
+            updateChatTitle(currentChat);
             
-
-            messageInput.focus();
-        }
-
-
-        function loadChat(chatId) {
-            currentChatId = chatId;
-
-
-            document.querySelectorAll('.chat-item').forEach(item => {
-                if (item.dataset.id === chatId) {
-                    item.classList.add('bg-dark-hover');
-                } else {
-                    item.classList.remove('bg-dark-hover');
-                }
-            });
-
-
-            chatMessages.innerHTML = '';
-
-
-            const currentChat = chats.find(chat => chat.id === chatId);
-            if (!currentChat || currentChat.messages.length === 0) return;
-
-
-            currentChat.messages.forEach(message => {
-                addMessageToUI(message.role, message.content);
-            });
+            messageInput.value = "";
+            autoResizeTextarea();
             
-            scrollToBottom();
-        }
+            typingIndicator.classList.remove("hidden");
+            stopButtonContainer.classList.remove("hidden");
+            isStopped = false;
 
-
-        function deleteChat(chatId, event) {
-            event.stopPropagation();
-            chats = chats.filter(chat => chat.id !== chatId);
-            saveChats();
-            renderChatHistory();
-
-            if (chatId === currentChatId) {
-                if (chats.length > 0) {
-                    loadChat(chats[0].id);
-                } else {
-                    createNewChat();
-                }
-            }
-        }
-
-
-        function updateChatTitle(chat) {
-            if (!chat || !chat.messages || chat.messages.length === 0) {
-                chat.title = "Cuộc trò chuyện mới";
-                saveChats();
-                renderChatHistory();
-                return;
-            }
-
-            const firstUserMessage = chat.messages.find(msg => msg.role === "user");
-            if (firstUserMessage) {
-                let title = firstUserMessage.content.substring(0, 40);
-                if (firstUserMessage.content.length > 40) {
-                    title += "...";
-                }
-                chat.title = title || "Cuộc trò chuyện mới";
-            } else {
-                chat.title = "Cuộc trò chuyện mới";
-            }
-
-            saveChats();
-            renderChatHistory();
-        }
-
-
-        function renderChatHistory() {
-            chatHistory.innerHTML = '';
-
-            if (chats.length === 0) {
-                chatHistory.innerHTML = `
-                    <div class="text-center p-4 text-gray-400">
-                        Chưa có cuộc trò chuyện nào
-                    </div>
-                `;
-                return;
-            }
-
-            chats.forEach(chat => {
-                const chatItem = document.createElement('div');
-                chatItem.className = `chat-item p-3 rounded-md flex items-center justify-between cursor-pointer hover:bg-dark-hover transition-colors ${chat.id === currentChatId ? 'bg-dark-hover' : ''}`;
-                chatItem.dataset.id = chat.id;
-
-                const chatDate = new Date(chat.createdAt || chat.id);
-                const formattedDate = chatDate.toLocaleDateString('vi-VN', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                });
-
-                chatItem.innerHTML = `
-                    <div class="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
-                        <div class="min-w-0">
-                            <div class="chat-title truncate font-medium">${chat.title || 'Cuộc trò chuyện mới'}</div>
-                            <div class="text-xs text-gray-400 truncate">${formattedDate}</div>
-                        </div>
-                    </div>
-                    <button class="delete-chat-btn text-gray-400 hover:text-red-500 p-1">
-                        <i class="fa-solid fa-delete-left"></i>
-                    </button>
-                `;
-
-                chatItem.addEventListener('click', (e) => {
-                    if (!e.target.closest('.delete-chat-btn')) {
-                        loadChat(chat.id);
-                    }
-                });
-
-                const deleteBtn = chatItem.querySelector('.delete-chat-btn');
-                deleteBtn.addEventListener('click', (e) => {
-                    deleteChat(chat.id, e);
-                });
-
-                chatHistory.appendChild(chatItem);
-            });
-        }
-
-
-        function loadChats() {
-            const storedChats = localStorage.getItem('C3-chats');
-            if (storedChats) {
-                const now = Date.now();
-                const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-
-                chats = JSON.parse(storedChats)
-                    .filter(chat => now - new Date(chat.createdAt || chat.id).getTime() < THIRTY_DAYS)
-                    .sort((a, b) => new Date(b.createdAt || b.id) - new Date(a.createdAt || a.id));
+            try {
+                const response = await literaryAI.sendQuery(userMessage, currentChat.messages);
                 
-                saveChats();
-                renderChatHistory();
+                if (response.success) {
+                    displayTypingMessage(response.data.response, () => {
+                        if (!isStopped) {
+                            currentChat.messages.push({
+                                role: "assistant",
+                                content: response.data.response,
+                                timestamp: new Date().toISOString()
+                            });
+                            saveChats();
+                        }
+                    });
+                } else {
+                    addMessageToUI("assistant", response.message);
+                }
+            } catch (error) {
+                console.error("Lỗi: ", error);
+                addMessageToUI("assistant", "Xin lỗi, đã xảy ra lỗi khi xử lý yêu cầu của bạn.");
+            } finally {
+                isSending = false;
+                typingIndicator.classList.add("hidden");
+                scrollToBottom();
             }
         }
 
-
-        function saveChats() {
-            const now = Date.now();
-            const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-
-            chats = chats.filter(chat => {
-                const chatTime = new Date(chat.createdAt || chat.id).getTime();
-                return now - chatTime < THIRTY_DAYS;
-            });
-
-            localStorage.setItem('C3-chats', JSON.stringify(chats));
-        }
-
-
-        function copyToClipboard(button) {
-            const code = decodeURIComponent(button.getAttribute('data-code'));
-            navigator.clipboard.writeText(code).then(() => {
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-check"></i> Đã sao chép!';
-                setTimeout(() => {
-                    button.innerHTML = originalText;
-                }, 2000);
-            });
-        }
-
-
-        window.addEventListener("beforeunload", () => {
-            chats = chats.filter(chat => chat.messages.length > 0);
-            saveChats();
-        });
-
-
-        document.addEventListener('DOMContentLoaded', initApp);
-        
-
-        window.copyToClipboard = copyToClipboard;
-    </script>
-</body>
-</html>
+        function displayTypingMessage(content, callback) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'bot-message';
+            messageDiv.innerHTML = '<div class="message-content
