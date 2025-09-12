@@ -230,6 +230,27 @@
         .university-table tr:nth-child(even) {
             background-color: #1a2332;
         }
+        
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .suggestion-chip {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+        
+        .suggestion-chip:hover {
+            background-color: #4338ca;
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col bg-dark-bg text-dark-text transition-all">
@@ -276,13 +297,22 @@
 
             <div class="p-4 border-t border-gray-700 bg-dark-bg">
                 <div class="max-w-3xl mx-auto">
+                    <div id="suggestions" class="suggestion-chips mb-2">
+                        <div class="suggestion-chip" data-query="Gợi ý trường đại học">🎓 Đại học</div>
+                        <div class="suggestion-chip" data-query="Trường ở Hà Nội">📍 Hà Nội</div>
+                        <div class="suggestion-chip" data-query="Trường ở TP.HCM">📍 TP.HCM</div>
+                        <div class="suggestion-chip" data-query="Trường công lập">🏛️ Công lập</div>
+                    </div>
                     <form id="chat-form" class="relative">
                         <textarea 
                             id="message-input" 
                             class="w-full p-4 rounded-lg border border-gray-600 bg-dark-hover resize-none focus:outline-none focus:ring-2 focus:ring-primary text-white"
-                            placeholder=" "
+                            placeholder="Nhập câu hỏi của bạn ở đây..."
                             rows="1"
                         ></textarea>
+                        <button type="submit" class="absolute right-2 bottom-2 bg-primary hover:bg-primary/90 text-white p-2 rounded-md">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
                     </form>
                 </div>
             </div>
@@ -293,26 +323,26 @@
     <script>
         // Danh sách các trường đại học Việt Nam
         const universities = [
-            { name: "Đại học Quốc gia Hà Nội", code: "QHQ", area: "Hà Nội", type: "Công lập" },
-            { name: "Đại học Quốc gia TP.HCM", code: "QSC", area: "TP.HCM", type: "Công lập" },
-            { name: "Đại học Bách khoa Hà Nội", code: "BKA", area: "Hà Nội", type: "Công lập" },
-            { name: "Đại học Kinh tế Quốc dân", code: "KTA", area: "Hà Nội", type: "Công lập" },
-            { name: "Đại học Ngoại thương", code: "NTH", area: "Hà Nội", type: "Công lập" },
-            { name: "Học viện Tài chính", code: "HTC", area: "Hà Nội", type: "Công lập" },
-            { name: "Đại học Y Hà Nội", code: "YHB", area: "Hà Nội", type: "Công lập" },
-            { name: "Đại học Sư phạm Hà Nội", code: "SPH", area: "Hà Nội", type: "Công lập" },
-            { name: "Đại học Bách khoa TP.HCM", code: "BKS", area: "TP.HCM", type: "Công lập" },
-            { name: "Đại học Kinh tế TP.HCM", code: "KTS", area: "TP.HCM", type: "Công lập" },
-            { name: "Đại học Sư phạm TP.HCM", code: "SPS", area: "TP.HCM", type: "Công lập" },
-            { name: "Đại học Y Dược TP.HCM", code: "YDS", area: "TP.HCM", type: "Công lập" },
-            { name: "Đại học Cần Thơ", code: "TCT", area: "Miền Tây", type: "Công lập" },
-            { name: "Đại học Đà Nẵng", code: "DDN", area: "Miền Trung", type: "Công lập" },
-            { name: "Đại học Huế", code: "DHT", area: "Miền Trung", type: "Công lập" },
-            { name: "Đại học FPT", code: "FPT", area: "Nhiều cơ sở", type: "Tư thục" },
-            { name: "Đại học RMIT", code: "RMI", area: "TP.HCM/Hà Nội", type: "Quốc tế" },
-            { name: "Đại học Tôn Đức Thắng", code: "DTT", area: "TP.HCM", type: "Công lập" },
-            { name: "Học viện Bưu chính Viễn thông", code: "BVN", area: "Hà Nội/TP.HCM", type: "Công lập" },
-            { name: "Đại học Giao thông Vận tải", code: "GTA", area: "Hà Nội/TP.HCM", type: "Công lập" }
+            { name: "Đại học Quốc gia Hà Nội", code: "QHQ", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Đại học Quốc gia TP.HCM", code: "QSC", area: "TP.HCM", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Đại học Bách khoa Hà Nội", code: "BKA", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Đại học Kinh tế Quốc dân", code: "KTA", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Đại học Ngoại thương", code: "NTH", area: "Hà Nội", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Học viện Tài chính", code: "HTC", area: "Hà Nội", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Y Hà Nội", code: "YHB", area: "Hà Nội", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Sư phạm Hà Nội", code: "SPH", area: "Hà Nội", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Bách khoa TP.HCM", code: "BKS", area: "TP.HCM", type: "Công lập", rank: "Đại trọng điểm" },
+            { name: "Đại học Kinh tế TP.HCM", code: "KTS", area: "TP.HCM", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Sư phạm TP.HCM", code: "SPS", area: "TP.HCM", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Y Dược TP.HCM", code: "YDS", area: "TP.HCM", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Cần Thơ", code: "TCT", area: "Miền Tây", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Đà Nẵng", code: "DDN", area: "Miền Trung", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Huế", code: "DHT", area: "Miền Trung", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học FPT", code: "FPT", area: "Nhiều cơ sở", type: "Tư thục", rank: "Tốp đầu tư thục" },
+            { name: "Đại học RMIT", code: "RMI", area: "TP.HCM/Hà Nội", type: "Quốc tế", rank: "Quốc tế" },
+            { name: "Đại học Tôn Đức Thắng", code: "DTT", area: "TP.HCM", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Học viện Bưu chính Viễn thông", code: "BVN", area: "Hà Nội/TP.HCM", type: "Công lập", rank: "Trọng điểm" },
+            { name: "Đại học Giao thông Vận tải", code: "GTA", area: "Hà Nội/TP.HCM", type: "Công lập", rank: "Trọng điểm" }
         ];
 
         class UniversityAI {
@@ -321,69 +351,43 @@
             }
 
             async processQuery(userInput) {
-                await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+                // Giả lập thời gian xử lý
+                await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700));
                 
                 const input = userInput.toLowerCase();
                 
                 // Xử lý các câu hỏi về trường đại học
                 if (input.includes("đại học") || input.includes("trường") || input.includes("học viện") || 
-                    input.includes("tuyển sinh") || input.includes("điểm chuẩn")) {
+                    input.includes("tuyển sinh") || input.includes("điểm chuẩn") || input.includes("đh")) {
                     
-                    let response = "";
-                    
-                    // Tìm kiếm theo khu vực
-                    if (input.includes("hà nội")) {
-                        const hnUnis = universities.filter(uni => uni.area.includes("Hà Nội"));
-                        response = this.formatUniversityResponse("Các trường đại học tại Hà Nội:", hnUnis);
-                    }
-                    else if (input.includes("hồ chí minh") || input.includes("tphcm") || input.includes("sài gòn")) {
-                        const hcmUnis = universities.filter(uni => uni.area.includes("TP.HCM"));
-                        response = this.formatUniversityResponse("Các trường đại học tại TP.HCM:", hcmUnis);
-                    }
-                    else if (input.includes("miền trung")) {
-                        const mtUnis = universities.filter(uni => uni.area.includes("Miền Trung"));
-                        response = this.formatUniversityResponse("Các trường đại học miền Trung:", mtUnis);
-                    }
-                    else if (input.includes("công lập")) {
-                        const publicUnis = universities.filter(uni => uni.type === "Công lập");
-                        response = this.formatUniversityResponse("Các trường đại học công lập:", publicUnis);
-                    }
-                    else if (input.includes("tư thục") || input.includes("dân lập")) {
-                        const privateUnis = universities.filter(uni => uni.type === "Tư thục");
-                        response = this.formatUniversityResponse("Các trường đại học tư thục:", privateUnis);
-                    }
-                    else if (input.includes("quốc tế")) {
-                        const intlUnis = universities.filter(uni => uni.type === "Quốc tế");
-                        response = this.formatUniversityResponse("Các trường đại học quốc tế:", intlUnis);
-                    }
-                    else {
-                        // Mặc định hiển thị tất cả các trường
-                        response = this.formatUniversityResponse("Danh sách một số trường đại học tại Việt Nam:", universities);
-                        response += "\n\nBạn có thể hỏi chi tiết hơn về:\n• Trường ở Hà Nội\n• Trường ở TP.HCM\n• Trường công lập/tư thục\n• Trường theo ngành cụ thể";
-                    }
-                    
-                    return {
-                        success: true,
-                        data: { response }
-                    };
+                    return this.handleUniversityQuery(input);
                 }
                 
                 // Xử lý các câu hỏi thông thường khác
-                let enhancedResponse = "";
+                return this.handleGeneralQuery(input);
+            }
+
+            handleUniversityQuery(input) {
+                let response = "";
+                let filteredUnis = [];
                 
-                if (input.includes("chào")) {
-                    enhancedResponse = "Xin chào! Tôi là Chatbot AI Đa Năng. Tôi có thể giúp bạn tìm hiểu về các trường đại học và nhiều chủ đề khác. Bạn cần hỗ trợ gì?";
-                } else if (input.includes("toán") || input.includes("tính")) {
-                    enhancedResponse = "Tôi có thể giúp bạn với các vấn đề về toán học. Bạn có thể hỏi về:\n\n" +
-                    "• Đại số và giải tích\n• Hình học\n• Thống kê và xác suất\n• Ứng dụng toán học trong thực tế\n\n" +
-                    "Hãy cho tôi biết cụ thể bạn cần giúp gì?";
-                } else if (input.includes("văn") || input.includes("viết")) {
-                    enhancedResponse = "Tôi có thể hỗ trợ bạn với các chủ đề văn học và viết lách:\n\n" +
-                    "• Phân tích tác phẩm văn học\n• Kỹ năng viết luận\n• Ngữ pháp và chính tả\n• Sáng tác thơ văn\n\n" +
-                    "Bạn đang cần giúp đỡ về vấn đề gì?";
-                } else if (input.includes("lập trình") || input.includes("code")) {
-                    enhancedResponse = "Tôi có thể hỗ trợ bạn với lập trình:\n\n" +
-                    "• HTML, CSS, JavaScript\n• Python, Java, C++\n• Thuật toán và cấu trúc dữ liệu\n• Debug và tối ưu code\n\n" +
-                    "Hãy chia sẻ vấn đề bạn đang gặp phải!";
-                } else {
-                    enhancedResponse = "Cảm ơn bạn đã chia sẻ
+                // Tìm kiếm theo khu vực
+                if (input.includes("hà nội") || input.includes("hn")) {
+                    filteredUnis = universities.filter(uni => uni.area.includes("Hà Nội"));
+                    response = this.formatUniversityResponse("Các trường đại học tại Hà Nội:", filteredUnis);
+                }
+                else if (input.includes("hồ chí minh") || input.includes("tphcm") || input.includes("sài gòn") || input.includes("hcm")) {
+                    filteredUnis = universities.filter(uni => uni.area.includes("TP.HCM"));
+                    response = this.formatUniversityResponse("Các trường đại học tại TP.HCM:", filteredUnis);
+                }
+                else if (input.includes("miền trung")) {
+                    filteredUnis = universities.filter(uni => uni.area.includes("Miền Trung"));
+                    response = this.formatUniversityResponse("Các trường đại học miền Trung:", filteredUnis);
+                }
+                else if (input.includes("công lập")) {
+                    filteredUnis = universities.filter(uni => uni.type === "Công lập");
+                    response = this.formatUniversityResponse("Các trường đại học công lập:", filteredUnis);
+                }
+                else if (input.includes("tư thục") || input.includes("dân lập")) {
+                    filteredUnis = universities.filter(uni => uni.type === "Tư thục");
+                    response = this.formatUniversityResponse("Các trường đại học tư thục:", filteredUnis
