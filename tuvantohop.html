@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>Tư vấn chọn tổ hợp theo năng lực học tập</title>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,7 +23,7 @@
             flex-direction: column;
             gap: 20px;
             width: 100%;
-            max-width: 500px;
+            max-width: 800px;
         }
         .DiemTHCS, .DiemTHCS2 {
             padding: 15px;
@@ -177,6 +178,25 @@
             border-top: 1px solid #dee2e6;
             z-index: 100;
         }
+        .chart-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+        }
+        .two-columns {
+            display: flex;
+            gap: 20px;
+        }
+        .two-columns > div {
+            flex: 1;
+        }
+        @media (max-width: 768px) {
+            .two-columns {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
@@ -289,17 +309,35 @@
                 </tr>
             </table>
         </div>
+        
+        <div class="chart-container">
+            <h3>Biểu đồ năng lực học tập</h3>
+            <div class="two-columns">
+                <div>
+                    <canvas id="barChart"></canvas>
+                </div>
+                <div>
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
     <footer>
         Cuộc thi khoa học kĩ thuật cấp trường
     </footer>
     <input type="file" id="excelFile" accept=".xls,.xlsx"/>
     <script>
+        // Biến toàn cục để lưu trữ dữ liệu biểu đồ
+        let barChart = null;
+        let radarChart = null;
         let selectedFile;
+        
+        // Sửa lỗi đọc file Excel
         document.getElementById('excelFile').addEventListener('change', function (e) {
             selectedFile = e.target.files[0];
             document.getElementById('fileName').textContent = selectedFile ? selectedFile.name : "Chưa chọn file nào";
         });
+        
         document.getElementById('mau2').addEventListener('click', function () {
             if (!selectedFile) {
                 alert("Vui lòng chọn một file Excel trước.");
@@ -307,114 +345,144 @@
             }
             const reader = new FileReader();
             reader.onload = function (e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(sheet);
-                if (jsonData.length === 0) {
-                    alert("File Excel không có dữ liệu hoặc không đúng định dạng.");
-                    return;
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet);
+                    
+                    if (jsonData.length === 0) {
+                        alert("File Excel không có dữ liệu hoặc không đúng định dạng.");
+                        return;
+                    }
+                    
+                    // Lấy dòng đầu tiên
+                    const row = jsonData[0];
+                    
+                    // Đọc dữ liệu với nhiều tên cột có thể có
+                    document.getElementById("van6").value = row["Van6"] || row["Ngữ văn 6"] || "";
+                    document.getElementById("van7").value = row["Van7"] || row["Ngữ văn 7"] || "";
+                    document.getElementById("van8").value = row["Van8"] || row["Ngữ văn 8"] || "";
+                    document.getElementById("van9").value = row["Van9"] || row["Ngữ văn 9"] || "";
+                    
+                    document.getElementById("toan6").value = row["Toan6"] || row["Toán 6"] || "";
+                    document.getElementById("toan7").value = row["Toan7"] || row["Toán 7"] || "";
+                    document.getElementById("toan8").value = row["Toan8"] || row["Toán 8"] || "";
+                    document.getElementById("toan9").value = row["Toan9"] || row["Toán 9"] || "";
+                    
+                    document.getElementById("anh6").value = row["Anh6"] || row["Anh văn 6"] || row["Ngoại ngữ 6"] || "";
+                    document.getElementById("anh7").value = row["Anh7"] || row["Anh văn 7"] || row["Ngoại ngữ 7"] || "";
+                    document.getElementById("anh8").value = row["Anh8"] || row["Anh văn 8"] || row["Ngoại ngữ 8"] || "";
+                    document.getElementById("anh9").value = row["Anh9"] || row["Anh văn 9"] || row["Ngoại ngữ 9"] || "";
+                    
+                    document.getElementById("gdcd6").value = row["GDCD6"] || row["GDCD 6"] || row["Giáo dục công dân 6"] || "";
+                    document.getElementById("gdcd7").value = row["GDCD7"] || row["GDCD 7"] || row["Giáo dục công dân 7"] || "";
+                    document.getElementById("gdcd8").value = row["GDCD8"] || row["GDCD 8"] || row["Giáo dục công dân 8"] || "";
+                    document.getElementById("gdcd9").value = row["GDCD9"] || row["GDCD 9"] || row["Giáo dục công dân 9"] || "";
+                    
+                    document.getElementById("lsdl6").value = row["LSDL6"] || row["LSĐL6"] || row["Lịch sử - Địa lý 6"] || "";
+                    document.getElementById("lsdl7").value = row["LSDL7"] || row["LSĐL7"] || row["Lịch sử - Địa lý 7"] || "";
+                    document.getElementById("lsdl8").value = row["LSDL8"] || row["LSĐL8"] || row["Lịch sử - Địa lý 8"] || "";
+                    document.getElementById("lsdl9").value = row["LSDL9"] || row["LSĐL9"] || row["Lịch sử - Địa lý 9"] || "";
+                    
+                    document.getElementById("khtn6").value = row["KHTN6"] || row["KHTN 6"] || row["Khoa học tự nhiên 6"] || "";
+                    document.getElementById("khtn7").value = row["KHTN7"] || row["KHTN 7"] || row["Khoa học tự nhiên 7"] || "";
+                    document.getElementById("khtn8").value = row["KHTN8"] || row["KHTN 8"] || row["Khoa học tự nhiên 8"] || "";
+                    document.getElementById("khtn9").value = row["KHTN9"] || row["KHTN 9"] || row["Khoa học tự nhiên 9"] || "";
+                    
+                    document.getElementById("cn6").value = row["CongNghe6"] || row["Công nghệ 6"] || "";
+                    document.getElementById("cn7").value = row["CongNghe7"] || row["Công nghệ 7"] || "";
+                    document.getElementById("cn8").value = row["CongNghe8"] || row["Công nghệ 8"] || "";
+                    document.getElementById("cn9").value = row["CongNghe9"] || row["Công nghệ 9"] || "";
+                    
+                    document.getElementById("th6").value = row["Tin6"] || row["Tin học 6"] || "";
+                    document.getElementById("th7").value = row["Tin7"] || row["Tin học 7"] || "";
+                    document.getElementById("th8").value = row["Tin8"] || row["Tin học 8"] || "";
+                    document.getElementById("th9").value = row["Tin9"] || row["Tin học 9"] || "";
+                    
+                    document.getElementById("nghethuat6").value = row["NgheThuat6"] || row["Nghệ thuật 6"] || "";
+                    document.getElementById("nghethuat7").value = row["NgheThuat7"] || row["Nghệ thuật 7"] || "";
+                    document.getElementById("nghethuat8").value = row["NgheThuat8"] || row["Nghệ thuật 8"] || "";
+                    document.getElementById("nghethuat9").value = row["NgheThuat9"] || row["Nghệ thuật 9"] || "";
+                    
+                    document.getElementById("hoatdong6").value = row["HoatDong6"] || row["Hoạt động trải nghiệm 6"] || "";
+                    document.getElementById("hoatdong7").value = row["HoatDong7"] || row["Hoạt động trải nghiệm 7"] || "";
+                    document.getElementById("hoatdong8").value = row["HoatDong8"] || row["Hoạt động trải nghiệm 8"] || "";
+                    document.getElementById("hoatdong9").value = row["HoatDong9"] || row["Hoạt động trải nghiệm 9"] || "";
+                    
+                    alert("Dữ liệu đã được đọc thành công!");
+                } catch (error) {
+                    console.error("Lỗi khi đọc file Excel:", error);
+                    alert("Đã xảy ra lỗi khi đọc file Excel. Vui lòng kiểm tra định dạng file.");
                 }
-                const row = jsonData[0];
-                document.getElementById("van6").value = row["Van6"] || "";
-                document.getElementById("van7").value = row["Van7"] || "";
-                document.getElementById("van8").value = row["Van8"] || "";
-                document.getElementById("van9").value = row["Van9"] || "";
-                document.getElementById("toan6").value = row["Toan6"] || "";
-                document.getElementById("toan7").value = row["Toan7"] || "";
-                document.getElementById("toan8").value = row["Toan8"] || "";
-                document.getElementById("toan9").value = row["Toan9"] || "";
-                document.getElementById("anh6").value = row["Anh6"] || "";
-                document.getElementById("anh7").value = row["Anh7"] || "";
-                document.getElementById("anh8").value = row["Anh8"] || "";
-                document.getElementById("anh9").value = row["Anh9"] || "";
-                document.getElementById("gdcd6").value = row["GDCD6"] || "";
-                document.getElementById("gdcd7").value = row["GDCD7"] || "";
-                document.getElementById("gdcd8").value = row["GDCD8"] || "";
-                document.getElementById("gdcd9").value = row["GDCD9"] || "";
-                document.getElementById("lsdl6").value = row["LSDL6"] || "";
-                document.getElementById("lsdl7").value = row["LSDL7"] || "";
-                document.getElementById("lsdl8").value = row["LSDL8"] || "";
-                document.getElementById("lsdl9").value = row["LSDL9"] || "";
-                document.getElementById("khtn6").value = row["KHTN6"] || "";
-                document.getElementById("khtn7").value = row["KHTN7"] || "";
-                document.getElementById("khtn8").value = row["KHTN8"] || "";
-                document.getElementById("khtn9").value = row["KHTN9"] || "";
-                document.getElementById("cn6").value = row["CongNghe6"] || "";
-                document.getElementById("cn7").value = row["CongNghe7"] || "";
-                document.getElementById("cn8").value = row["CongNghe8"] || "";
-                document.getElementById("cn9").value = row["CongNghe9"] || "";
-                document.getElementById("th6").value = row["Tin6"] || "";
-                document.getElementById("th7").value = row["Tin7"] || "";
-                document.getElementById("th8").value = row["Tin8"] || "";
-                document.getElementById("th9").value = row["Tin9"] || "";
-                document.getElementById("nghethuat6").value = row["NgheThuat6"] || "";
-                document.getElementById("nghethuat7").value = row["NgheThuat7"] || "";
-                document.getElementById("nghethuat8").value = row["NgheThuat8"] || "";
-                document.getElementById("nghethuat9").value = row["NgheThuat9"] || "";
-                document.getElementById("hoatdong6").value = row["HoatDong6"] || "";
-                document.getElementById("hoatdong7").value = row["HoatDong7"] || "";
-                document.getElementById("hoatdong8").value = row["HoatDong8"] || "";
-                document.getElementById("hoatdong9").value = row["HoatDong9"] || "";
-                alert("Dữ liệu đã được đọc thành công!");
             };
             reader.readAsArrayBuffer(selectedFile);
         });
+        
+        // Sửa lỗi tư vấn tổ hợp
         document.getElementById("tuvan").onclick = function() {
+            // Lấy dữ liệu điểm từ các ô input
             let van6 = parseFloat(document.getElementById('van6').value) || 0;
             let van7 = parseFloat(document.getElementById('van7').value) || 0;
             let van8 = parseFloat(document.getElementById('van8').value) || 0;
             let van9 = parseFloat(document.getElementById('van9').value) || 0;
+            
             let toan6 = parseFloat(document.getElementById('toan6').value) || 0;
             let toan7 = parseFloat(document.getElementById('toan7').value) || 0;
             let toan8 = parseFloat(document.getElementById('toan8').value) || 0;
             let toan9 = parseFloat(document.getElementById('toan9').value) || 0;
+            
             let anh6 = parseFloat(document.getElementById('anh6').value) || 0;
             let anh7 = parseFloat(document.getElementById('anh7').value) || 0;
             let anh8 = parseFloat(document.getElementById('anh8').value) || 0;
             let anh9 = parseFloat(document.getElementById('anh9').value) || 0;
+            
             let gdcd6 = parseFloat(document.getElementById('gdcd6').value) || 0;
             let gdcd7 = parseFloat(document.getElementById('gdcd7').value) || 0;
             let gdcd8 = parseFloat(document.getElementById('gdcd8').value) || 0;
             let gdcd9 = parseFloat(document.getElementById('gdcd9').value) || 0;
+            
             let lsdl6 = parseFloat(document.getElementById('lsdl6').value) || 0;
             let lsdl7 = parseFloat(document.getElementById('lsdl7').value) || 0;
             let lsdl8 = parseFloat(document.getElementById('lsdl8').value) || 0;
             let lsdl9 = parseFloat(document.getElementById('lsdl9').value) || 0;
+            
             let khtn6 = parseFloat(document.getElementById('khtn6').value) || 0;
             let khtn7 = parseFloat(document.getElementById('khtn7').value) || 0;
             let khtn8 = parseFloat(document.getElementById('khtn8').value) || 0;
             let khtn9 = parseFloat(document.getElementById('khtn9').value) || 0;
+            
             let cn6 = parseFloat(document.getElementById('cn6').value) || 0;
             let cn7 = parseFloat(document.getElementById('cn7').value) || 0;
             let cn8 = parseFloat(document.getElementById('cn8').value) || 0;
             let cn9 = parseFloat(document.getElementById('cn9').value) || 0;
+            
             let th6 = parseFloat(document.getElementById('th6').value) || 0;
             let th7 = parseFloat(document.getElementById('th7').value) || 0;
             let th8 = parseFloat(document.getElementById('th8').value) || 0;
             let th9 = parseFloat(document.getElementById('th9').value) || 0;
-            let nghethuat6 = parseFloat(document.getElementById('nghethuat6').value) || 0;
-            let nghethuat7 = parseFloat(document.getElementById('nghethuat7').value) || 0;
-            let nghethuat8 = parseFloat(document.getElementById('nghethuat8').value) || 0;
-            let nghethuat9 = parseFloat(document.getElementById('nghethuat9').value) || 0;
-            let hoatdong6 = parseFloat(document.getElementById('hoatdong6').value) || 0;
-            let hoatdong7 = parseFloat(document.getElementById('hoatdong7').value) || 0;
-            let hoatdong8 = parseFloat(document.getElementById('hoatdong8').value) || 0;
-            let hoatdong9 = parseFloat(document.getElementById('hoatdong9').value) || 0;
+            
+            // Hàm tính điểm trung bình
             const calculateAverage = (scores) => {
                 const validScores = scores.filter(s => s > 0);
-                return validScores.length > 0 ? validScores.reduce((sum, s) => sum + s, 0) / validScores.length : 0;
+                return validScores.length > 0 ? 
+                    (validScores.reduce((sum, s) => sum + s, 0) / validScores.length).toFixed(2) : 0;
             };
-            let tbVan = calculateAverage([van6, van7, van8, van9]);
-            let tbToan = calculateAverage([toan6, toan7, toan8, toan9]);
-            let tbAnh = calculateAverage([anh6, anh7, anh8, anh9]);
-            let tbGDCD = calculateAverage([gdcd6, gdcd7, gdcd8, gdcd9]);
-            let tbLSDL = calculateAverage([lsdl6, lsdl7, lsdl8, lsdl9]);
-            let tbKHTN = calculateAverage([khtn6, khtn7, khtn8, khtn9]);
-            let tbCN = calculateAverage([cn6, cn7, cn8, cn9]);
-            let tbTH = calculateAverage([th6, th7, th8, th9]);
-            let tbNgheThuat = calculateAverage([nghethuat6, nghethuat7, nghethuat8, nghethuat9]);
-            let tbHoatDong = calculateAverage([hoatdong6, hoatdong7, hoatdong8, hoatdong9]);
+            
+            // Tính điểm trung bình các môn
+            let tbVan = parseFloat(calculateAverage([van6, van7, van8, van9]));
+            let tbToan = parseFloat(calculateAverage([toan6, toan7, toan8, toan9]));
+            let tbAnh = parseFloat(calculateAverage([anh6, anh7, anh8, anh9]));
+            let tbGDCD = parseFloat(calculateAverage([gdcd6, gdcd7, gdcd8, gdcd9]));
+            let tbLSDL = parseFloat(calculateAverage([lsdl6, lsdl7, lsdl8, lsdl9]));
+            let tbKHTN = parseFloat(calculateAverage([khtn6, khtn7, khtn8, khtn9]));
+            let tbCN = parseFloat(calculateAverage([cn6, cn7, cn8, cn9]));
+            let tbTH = parseFloat(calculateAverage([th6, th7, th8, th9]));
+            
+            // Tạo biểu đồ
+            createCharts(tbVan, tbToan, tbAnh, tbGDCD, tbLSDL, tbKHTN, tbCN, tbTH);
+            
+            // Đánh giá năng lực
             let allSubjects = [
                 van6, van7, van8, van9,
                 toan6, toan7, toan8, toan9,
@@ -423,11 +491,11 @@
                 lsdl6, lsdl7, lsdl8, lsdl9,
                 khtn6, khtn7, khtn8, khtn9,
                 cn6, cn7, cn8, cn9,
-                th6, th7, th8, th9,
-                nghethuat6, nghethuat7, nghethuat8, nghethuat9,
-                hoatdong6, hoatdong7, hoatdong8, hoatdong9
+                th6, th7, th8, th9
             ];
+            
             let tbAll = calculateAverage(allSubjects);
+            
             let subjectsScores = [
                 { name: "Ngữ văn", score: tbVan },
                 { name: "Toán", score: tbToan },
@@ -438,12 +506,15 @@
                 { name: "Công nghệ", score: tbCN },
                 { name: "Tin học", score: tbTH }
             ];
+            
             let highScoringSubjects = subjectsScores.filter(subject => subject.score >= 6.5);
+            
             if (highScoringSubjects.length < 2) {
                 subjectsScores.sort((a, b) => b.score - a.score);
                 let topSubject = subjectsScores[0];
                 let secondSubject = subjectsScores[1];
                 let recommendedVocations = [];
+                
                 if (topSubject.score < 5.0) {
                     recommendedVocations.push("Hiện tại điểm số các môn đều thấp, bạn nên tập trung cải thiện học lực trước khi chọn nghề.");
                 } else {
@@ -473,25 +544,29 @@
                             break;
                     }
                 }
+                
                 let resultText = "════════ TƯ VẤN HƯỚNG NGHIỆP ════════\n\n";
-                resultText += `📉 Điểm trung bình tất cả các môn: ${tbAll.toFixed(2)}\n\n`;
+                resultText += `📉 Điểm trung bình tất cả các môn: ${tbAll}\n\n`;
                 resultText += "🏭 GỢI Ý HỌC NGHỀ:\n";
                 resultText += `Dựa trên năng lực của bạn, bạn nên cân nhắc học các nghề sau:\n`;
                 recommendedVocations.forEach(vocation => {
                     resultText += `🔹 ${vocation}\n`;
                 });
                 resultText += "\n📊 ĐIỂM TRUNG BÌNH CÁC MÔN:\n";
-                resultText += `- Ngữ văn: ${tbVan.toFixed(2)}\n`;
-                resultText += `- Toán: ${tbToan.toFixed(2)}\n`;
-                resultText += `- Ngoại ngữ: ${tbAnh.toFixed(2)}\n`;
-                resultText += `- Khoa học tự nhiên: ${tbKHTN.toFixed(2)}\n`;
-                resultText += `- Lịch sử - Địa lý: ${tbLSDL.toFixed(2)}\n`;
-                resultText += `- Công nghệ: ${tbCN.toFixed(2)}\n`;
-                resultText += `- Tin học: ${tbTH.toFixed(2)}\n\n`;
+                resultText += `- Ngữ văn: ${tbVan}\n`;
+                resultText += `- Toán: ${tbToan}\n`;
+                resultText += `- Ngoại ngữ: ${tbAnh}\n`;
+                resultText += `- Khoa học tự nhiên: ${tbKHTN}\n`;
+                resultText += `- Lịch sử - Địa lý: ${tbLSDL}\n`;
+                resultText += `- Công nghệ: ${tbCN}\n`;
+                resultText += `- Tin học: ${tbTH}\n\n`;
                 resultText += "💡 LỜI KHUYÊN: Điểm số hiện tại cho thấy bạn phù hợp với các chương trình đào tạo nghề cơ bản. Hãy chọn nghề phù hợp với sở thích và năng lực, đồng thời tiếp tục cải thiện các môn học để có thêm cơ hội. Liên hệ với trung tâm hướng nghiệp để biết thêm chi tiết.";
+                
                 document.getElementById("kqtuvan").textContent = resultText;
                 return;
             }
+            
+            // Tính điểm các tổ hợp
             const toHop = [
                 {
                     name: "A00 (Toán, Vật lý, Hóa học)",
@@ -499,7 +574,7 @@
                     weights: [0.6, 0.4],
                     check: () => tbToan >= 6.5 && tbKHTN >= 6.5
                 },
-                 {
+                {
                     name: "B00 (Toán, Hóa học, Sinh học)",
                     subjects: ["Toán", "KHTN"],
                     weights: [0.5, 0.5],
@@ -523,8 +598,8 @@
                     weights: [0.5, 0.5],
                     check: () => tbVan >= 6.5 && tbLSDL >= 6.5
                 }
-                
             ];
+            
             let diemToHop = toHop
                 .filter(comb => comb.check())
                 .map(comb => {
@@ -537,39 +612,4 @@
                             case "GDCD": diem += tbGDCD * comb.weights[index]; break;
                             case "LSDL": diem += tbLSDL * comb.weights[index]; break;
                             case "KHTN": diem += tbKHTN * comb.weights[index]; break;
-                            case "CN": diem += tbCN * comb.weights[index]; break;
-                            case "TH": diem += tbTH * comb.weights[index]; break;
-                        }
-                    });
-                    return {
-                        name: comb.name,
-                        diem: diem
-                    };
-                });
-            diemToHop.sort((a, b) => b.diem - a.diem);
-            let resultText = "════════ TƯ VẤN TỔ HỢP MÔN HỌC ════════\n\n";
-            resultText += `📊 Điểm trung bình tất cả các môn: ${tbAll.toFixed(2)}\n\n`;
-            if (diemToHop.length === 0) {
-                resultText += "⚠️ Không tìm thấy tổ hợp môn học nào phù hợp do không đủ môn có điểm từ 6.5 trở lên.\n\n";
-                resultText += "💡 LỜI KHUYÊN: Bạn nên tập trung cải thiện điểm số các môn học chính (Toán, Ngữ văn, Ngoại ngữ, Khoa học tự nhiên, Lịch sử - Địa lý) để đủ điều kiện xét tổ hợp môn học.";
-            } else {
-                resultText += "🏆 TỔ HỢP PHÙ HỢP NHẤT:\n";
-                resultText += `🔹 ${diemToHop[0].name}\n`;
-                resultText += ` Điểm đánh giá: ${diemToHop[0].diem.toFixed(2)}\n\n`;
-                if (diemToHop.length > 1) {
-                    resultText += "🥈 TỔ HỢP PHÙ HỢP THỨ 2:\n";
-                    resultText += `🔹 ${diemToHop[1].name}\n`;
-                    resultText += ` Điểm đánh giá: ${diemToHop[1].diem.toFixed(2)}\n\n`;
-                }
-                resultText += "📊 ĐIỂM TRUNG BÌNH CÁC MÔN:\n";
-                resultText += `- Ngữ văn: ${tbVan.toFixed(2)}\n`;
-                resultText += `- Toán: ${tbToan.toFixed(2)}\n`;
-                resultText += `- Ngoại ngữ: ${tbAnh.toFixed(2)}\n`;
-                resultText += `- Khoa học tự nhiên: ${tbKHTN.toFixed(2)}\n`;
-                resultText += `- Lịch sử - Địa lý: ${tbLSDL.toFixed(2)}\n`;
-                resultText += `- Công nghệ: ${tbCN.toFixed(2)}\n`;
-                resultText += `- Tin học: ${tbTH.toFixed(2)}\n\n`;
-                resultText += "💡 GỢI Ý: Bạn nên ưu tiên chọn tổ hợp có điểm cao nhất phù hợp với năng lực và sở thích của mình. Nếu có thắc mắc, hãy trao đổi thêm với giáo viên chủ nhiệm hoặc chuyên viên hướng nghiệp.\n";
-                 resultText += "CHÚ Ý: Các môn được đề xuất tổ hợp trên là các môn ở chương trình cấp 3.";
-            }
-           
+                            case "CN": diem += tbCN * comb.
