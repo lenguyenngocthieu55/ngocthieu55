@@ -31,7 +31,6 @@
         }
     </script>
     <style>
-        /* Giữ nguyên các style */
         body {
             font-family: 'Calibri', sans-serif;
             background-color: #0f172a;
@@ -270,79 +269,6 @@
     </div>
     
 
-    <script>
-// ĐÃ XÓA: Danh sách từ khóa và hàm kiểm tra câu hỏi liên quan đến cấp 3
-function isLiteraryQuestion(question) {
-    // Luôn trả về true để chấp nhận mọi câu hỏi
-    return true;
-}
-        class LiteraryAI {
-            constructor() {
-                this.endpoint = "https://ndcuti-aivanhocg1.hf.space/api/v1/chat";
-                this.conversationHistory = [];
-            }
-
-            async sendQuery(userInput, previousMessages = []) {
-    // ĐÃ XÓA: Kiểm tra câu hỏi có liên quan đến cấp 3 không
-    try {
-        const response = await this.mockApiCall(userInput, previousMessages);
-        return response;
-    } catch (error) {
-        console.error("API Error:", error);
-        throw new Error("Lỗi kết nối 221!");
-    }
-}
-
-
-            async mockApiCall(userInput, history) {
-    // ĐÃ XÓA: Kiểm tra câu hỏi có liên quan đến cấp 3 không
-                await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
-                
-                // Tạo phản hồi mẫu cho chatbot đa năng
-                let enhancedResponse = "";
-                
-                if (userInput.toLowerCase().includes("chào")) {
-                    enhancedResponse = "Xin chào! Tôi là Chatbot AI Đa Năng. Tôi có thể giúp bạn với nhiều chủ đề khác nhau. Bạn cần hỗ trợ gì?";
-                } else if (userInput.toLowerCase().includes("toán") || userInput.toLowerCase().includes("tính")) {
-                    enhancedResponse = "Tôi có thể giúp bạn với các vấn đề về toán học. Bạn có thể hỏi về:\n\n" +
-                    "• Đại số và giải tích\n" +
-                    "• Hình học\n" +
-                    "• Thống kê và xác suất\n" +
-                    "• Ứng dụng toán học trong thực tế\n\n" +
-                    "Hãy cho tôi biết cụ thể bạn cần giúp gì?";
-                } else if (userInput.toLowerCase().includes("văn") || userInput.toLowerCase().includes("viết")) {
-                    enhancedResponse = "Tôi có thể hỗ trợ bạn với các chủ đề văn học và viết lách:\n\n" +
-                    "• Phân tích tác phẩm văn học\n" +
-                    "• Kỹ năng viết luận\n" +
-                    "• Ngữ pháp và chính tả\n" +
-                    "• Sáng tác thơ văn\n\n" +
-                    "Bạn đang cần giúp đỡ về vấn đề gì?";
-                } else if (userInput.toLowerCase().includes("lập trình") || userInput.toLowerCase().includes("code")) {
-                    enhancedResponse = "Tôi có thể hỗ trợ bạn với lập trình:\n\n" +
-                    "• HTML, CSS, JavaScript\n" +
-                    "• Python, Java, C++\n" +
-                    "• Thuật toán và cấu trúc dữ liệu\n" +
-                    "• Debug và tối ưu code\n\n" +
-                    "Hãy chia sẻ vấn đề bạn đang gặp phải!";
-                } else {
-                    enhancedResponse = "Cảm ơn bạn đã chia sẻ câu hỏi. Là một AI đa năng, tôi có thể giúp bạn với nhiều chủ đề như:\n\n" +
-                    "• Kiến thức học thuật các môn học\n" +
-                    "• Kỹ năng mềm và phương pháp học tập\n" +
-                    "• Giải trí và đời sống\n" +
-                    "• Công nghệ và lập trình\n" +
-                    "• Và nhiều chủ đề khác\n\n" +
-                    "Bạn có thể chia sẻ cụ thể hơn về vấn đề bạn đang gặp phải không?";
-                }
-
-                return {
-                    success: true,
-                    data: {
-                        response: enhancedResponse
-                    }
-                };
-            }
-        }
-    </script>
     <script type="importmap">
         {
             "imports": {
@@ -427,7 +353,6 @@ function setupEventListeners() {
     const userMessage = messageInput.value.trim();
     if (!userMessage || isSending) return;
 
-    // ĐÃ XÓA: Kiểm tra câu hỏi có liên quan đến cấp 3 không
     if (!currentChatId) {
         createNewChat();
         return;
@@ -481,7 +406,7 @@ if (greetings.some(greet => userMessage.toLowerCase().includes(greet))) {
                 parts: [{ text: msg.content }]
             })),
             generationConfig: {
-                maxOutputTokens: 2000,
+                maxOutputTokens: 15000, // ĐÃ TĂNG LÊN 15000
                 temperature: 0.9,
                 topP: 0.1,
                 topK: 16,
@@ -490,7 +415,19 @@ if (greetings.some(greet => userMessage.toLowerCase().includes(greet))) {
 
         const result = await chatSession.sendMessage(userMessage);
         const response = await result.response;
-        const botReply = response.text();
+        let botReply = response.text();
+
+        // Kiểm tra và xử lý nếu câu trả lời bị cắt ngắn
+        if (botReply.length > 0 && !/[.!?]$/.test(botReply) && !botReply.includes("\n\n")) {
+            // Thử lấy thêm nội dung nếu câu trả lời bị cắt ngắn
+            try {
+                const followUpResult = await chatSession.sendMessage("Tiếp tục câu trả lời của bạn");
+                const followUpResponse = await followUpResult.response;
+                botReply += " " + followUpResponse.text();
+            } catch (e) {
+                console.log("Không thể lấy thêm nội dung");
+            }
+        }
 
         displayTypingMessage(botReply, () => {
             if (!isStopped) {
@@ -504,7 +441,7 @@ if (greetings.some(greet => userMessage.toLowerCase().includes(greet))) {
         });
     } catch (error) {
         console.error("Lỗi: ", error);
-        addMessageToUI("assistant", "Lỗi kết nối 221!");
+        addMessageToUI("assistant", "Lỗi kết nối 221! Vui lòng thử lại.");
     } finally {
         isSending = false;
         typingIndicator.classList.add("hidden");
@@ -521,7 +458,7 @@ if (greetings.some(greet => userMessage.toLowerCase().includes(greet))) {
     scrollToBottom();
 
     let i = 0;
-    const speed = 0;
+    const speed = 20;
     const contentDiv = messageDiv.querySelector('.message-content');
 
     if (typingInterval) clearInterval(typingInterval);
