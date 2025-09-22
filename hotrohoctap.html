@@ -224,6 +224,12 @@
         .continue-btn:hover {
             background-color: #4338ca;
         }
+
+        .quality-indicator {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col bg-dark-bg text-dark-text transition-all">
@@ -244,7 +250,7 @@
         
         <div class="flex-1 flex flex-col h-full overflow-hidden">
             <header class="p-4 border-b border-gray-700 bg-dark-bg">
-                <h1 class="text-xl font-semibold text-left">C3 | Chatbot AI Đa Năng - Không giới hạn</h1>
+                <h1 class="text-xl font-semibold text-left">C3 | Chatbot AI Đa Năng - Trả lời ngắn gọn, trọng tâm</h1>
             </header>
             
             <div id="chat-container" class="flex-1 overflow-y-auto hide-scrollbar p-4 bg-gray-900 flex flex-col gap-3">
@@ -272,7 +278,7 @@
                         <textarea 
                             id="message-input" 
                             class="w-full p-4 rounded-lg border border-gray-600 bg-dark-hover resize-none focus:outline-none focus:ring-2 focus:ring-primary text-white"
-                            placeholder="Nhập câu hỏi của bạn ở đây..."
+                            placeholder="Nhập câu hỏi của bạn ở đây... (Yêu cầu trả lời ngắn gọn, trọng tâm)"
                             rows="1"
                         ></textarea>
                     </form>
@@ -310,7 +316,6 @@
         let chats = [];
         let currentChatId = null;
         let isSending = false;
-        let typingInterval = null;
         let isStopped = false;
         let currentChatSession = null;
         let lastUserMessage = "";
@@ -344,10 +349,6 @@
 
             document.getElementById('stop-response-btn').addEventListener('click', () => {
                 isStopped = true;
-                if (typingInterval) {
-                    clearInterval(typingInterval);
-                    typingInterval = null;
-                }
                 stopButtonContainer.classList.add('hidden');
                 continueButtonContainer.classList.remove('hidden');
             });
@@ -363,6 +364,77 @@
             messageInput.style.height = 'auto';
             const newHeight = Math.min(messageInput.scrollHeight, 150);
             messageInput.style.height = `${newHeight}px`;
+        }
+
+        // PHÂN TÍCH LOẠI CÂU HỎI
+        function analyzeQuestionType(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('là gì') || lowerMessage.includes('định nghĩa') || 
+                lowerMessage.includes('ai là') || lowerMessage.match(/\d{4}/)) {
+                return 'factual';
+            }
+            
+            if (lowerMessage.includes('cách') || lowerMessage.includes('làm sao') || 
+                lowerMessage.includes('hướng dẫn') || lowerMessage.includes('bước')) {
+                return 'howto';
+            }
+            
+            if (lowerMessage.includes('tại sao') || lowerMessage.includes('vì sao') || 
+                lowerMessage.includes('giải thích') || lowerMessage.includes('nguyên nhân')) {
+                return 'explanation';
+            }
+            
+            if (lowerMessage.includes('so sánh') || lowerMessage.includes('khác nhau') || 
+                lowerMessage.includes('giống nhau') || lowerMessage.includes('vs')) {
+                return 'comparison';
+            }
+            
+            return 'general';
+        }
+
+        // TỐI ƯU PROMPT THEO LOẠI CÂU HỎI
+        function optimizePrompt(userMessage) {
+            const questionType = analyzeQuestionType(userMessage);
+            
+            let systemPrompt = "";
+            
+            switch(questionType) {
+                case 'factual':
+                    systemPrompt = "TRẢ LỜI SỰ KIỆN: Chỉ cung cấp thông tin chính xác, ngắn gọn. Liệt kê facts nếu cần. Độ dài tối đa 150 từ.";
+                    break;
+                case 'howto':
+                    systemPrompt = "HƯỚNG DẪN: Trình bày từng bước rõ ràng, không giải thích dài dòng. Tối đa 5 bước.";
+                    break;
+                case 'explanation':
+                    systemPrompt = "GIẢI THÍCH: Tập trung vào bản chất vấn đề, dùng ví dụ ngắn nếu cần. Tối đa 200 từ.";
+                    break;
+                case 'comparison':
+                    systemPrompt = "SO SÁNH: Liệt kê điểm khác biệt chính, bảng so sánh nếu phù hợp. Tối đa 150 từ.";
+                    break;
+                default:
+                    systemPrompt = "Trả lời ngắn gọn, tập trung vào trọng tâm, không lan man. Tối đa 200 từ.";
+            }
+            
+            return `${userMessage}\n\n[YÊU CẦU: ${systemPrompt} Ưu tiên thông tin chính xác, cấu trúc rõ ràng.]`;
+        }
+
+        // ĐÁNH GIÁ CHẤT LƯỢNG TRẢ LỜI
+        function evaluateResponseQuality(response, originalQuestion) {
+            const wordCount = response.split(' ').length;
+            const hasBulletPoints = response.includes('- ') || response.includes('•') || response.includes('1.');
+            const questionKeywords = originalQuestion.toLowerCase().split(' ').filter(word => word.length > 2);
+            const relevanceScore = questionKeywords.filter(keyword => 
+                response.toLowerCase().includes(keyword)
+            ).length / Math.max(questionKeywords.length, 1);
+            
+            return {
+                isConcise: wordCount <= 300,
+                isStructured: hasBulletPoints,
+                isRelevant: relevanceScore >= 0.6,
+                wordCount: wordCount,
+                relevanceScore: relevanceScore
+            };
         }
 
         async function handleSubmit(e) {
@@ -385,19 +457,17 @@
             addMessageToUI("user", userMessage);
             lastUserMessage = userMessage;
             
-            const greetings = ["chào", "hello"];
+            // Xử lý tin nhắn chào hỏi nhanh
+            const greetings = ["chào", "hello", "hi", "xin chào"];
             if (greetings.some(greet => userMessage.toLowerCase().includes(greet))) {
-                const greetingResponse = "Xin chào, tôi là AI Đa Năng. Tôi có thể giúp gì cho bạn ngay bây giờ?";
-                displayTypingMessage(greetingResponse, () => {
-                    if (!isStopped) {
-                        currentChat.messages.push({ 
-                            role: "assistant", 
-                            content: greetingResponse,
-                            timestamp: new Date().toISOString()
-                        });
-                        saveChats();
-                    }
+                const greetingResponse = "Xin chào! Tôi là AI Đa Năng. Tôi có thể giúp gì cho bạn?";
+                addMessageToUI("assistant", greetingResponse);
+                currentChat.messages.push({ 
+                    role: "assistant", 
+                    content: greetingResponse,
+                    timestamp: new Date().toISOString()
                 });
+                saveChats();
                 messageInput.value = "";
                 autoResizeTextarea();
                 isSending = false;
@@ -415,53 +485,89 @@
 
             messageInput.value = "";
             autoResizeTextarea();
+            
             typingIndicator.classList.remove("hidden");
-            stopButtonContainer.classList.remove("hidden"); 
+            stopButtonContainer.classList.remove("hidden");
             continueButtonContainer.classList.add("hidden");
             isStopped = false;
 
             try {
+                // TỐI ƯU: Chỉ gửi 12 tin nhắn gần nhất
+                const recentMessages = currentChat.messages.slice(-12);
+                
                 currentChatSession = model.startChat({
-                    history: currentChat.messages.map(msg => ({
+                    history: recentMessages.map(msg => ({
                         role: msg.role === "user" ? "user" : "model",
                         parts: [{ text: msg.content }]
                     })),
                     generationConfig: {
-                        maxOutputTokens: 8192, // Sử dụng giá trị tối đa có thể
-                        temperature: 0.9,
-                        topP: 0.1,
-                        topK: 16,
+                        maxOutputTokens: 2048, // GIẢM: Tránh trả lời dài dòng
+                        temperature: 0.3,     // GIẢM MẠNH: Tập trung vào facts
+                        topP: 0.5,           // GIẢM: Chọn từ ngữ chắc chắn
+                        topK: 20,            // GIẢM: Giới hạn lựa chọn từ vựng
                     }
                 });
 
-                const result = await currentChatSession.sendMessage(userMessage);
-                const response = await result.response;
-                let botReply = response.text();
-
-                // Kiểm tra xem câu trả lời có bị cắt ngắn không
-                const isTruncated = botReply.length > 0 && !/[.!?]$/.test(botReply) && !botReply.includes("\n\n");
+                // PROMPT ENGINEERING: Tối ưu hóa câu hỏi
+                const optimizedPrompt = optimizePrompt(userMessage);
                 
-                displayTypingMessage(botReply, () => {
-                    if (!isStopped) {
-                        currentChat.messages.push({ 
-                            role: "assistant", 
-                            content: botReply,
-                            timestamp: new Date().toISOString()
-                        });
-                        saveChats();
-                        
-                        // Hiển thị nút tiếp tục nếu câu trả lời có vẻ bị cắt ngắn
-                        if (isTruncated) {
-                            continueButtonContainer.classList.remove("hidden");
-                        }
+                const result = await currentChatSession.sendMessageStream(optimizedPrompt);
+                let fullResponse = '';
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'bot-message';
+                messageDiv.innerHTML = '<div class="message-content"></div>';
+                chatMessages.appendChild(messageDiv);
+                
+                const contentDiv = messageDiv.querySelector('.message-content');
+                typingIndicator.classList.add("hidden");
+                
+                // Streaming response
+                for await (const chunk of result.stream) {
+                    if (isStopped) break;
+                    
+                    const chunkText = chunk.text();
+                    fullResponse += chunkText;
+                    
+                    contentDiv.innerHTML = formatMessage(fullResponse);
+                    scrollToBottom();
+                    
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+
+                if (!isStopped) {
+                    // Đánh giá chất lượng câu trả lời
+                    const quality = evaluateResponseQuality(fullResponse, userMessage);
+                    
+                    currentChat.messages.push({ 
+                        role: "assistant", 
+                        content: fullResponse,
+                        timestamp: new Date().toISOString(),
+                        quality: quality // Lưu thông tin chất lượng
+                    });
+                    saveChats();
+                    
+                    // Hiển thị đánh giá chất lượng (tùy chọn)
+                    if (quality.wordCount > 400) {
+                        const qualityDiv = document.createElement('div');
+                        qualityDiv.className = 'quality-indicator';
+                        qualityDiv.textContent = `📊 Độ dài: ${quality.wordCount} từ - ${quality.isRelevant ? '✅ Trọng tâm' : '⚠️ Có thể lan man'}`;
+                        messageDiv.appendChild(qualityDiv);
                     }
-                });
+                    
+                    // Kiểm tra xem response có bị cắt ngắn không
+                    const isTruncated = fullResponse.length > 0 && !/[.!?]$/.test(fullResponse);
+                    if (isTruncated) {
+                        continueButtonContainer.classList.remove("hidden");
+                    }
+                }
+                
             } catch (error) {
                 console.error("Lỗi: ", error);
                 addMessageToUI("assistant", "Lỗi kết nối! Vui lòng thử lại.");
             } finally {
                 isSending = false;
                 typingIndicator.classList.add("hidden");
+                stopButtonContainer.classList.add("hidden");
                 scrollToBottom();
             }
         }
@@ -474,38 +580,64 @@
             
             isSending = true;
             typingIndicator.classList.remove("hidden");
-            stopButtonContainer.classList.remove("hidden"); 
+            stopButtonContainer.classList.remove("hidden");
             continueButtonContainer.classList.add("hidden");
             isStopped = false;
             
             try {
-                // Yêu cầu mô hình tiếp tục câu trả lời
-                const result = await currentChatSession.sendMessage("Hãy tiếp tục và mở rộng câu trả lời của bạn một cách chi tiết.");
-                const response = await result.response;
-                let continuedReply = response.text();
+                const recentMessages = currentChat.messages.slice(-12);
                 
-                // Tìm tin nhắn bot cuối cùng để thêm nội dung tiếp theo
+                currentChatSession = model.startChat({
+                    history: recentMessages.map(msg => ({
+                        role: msg.role === "user" ? "user" : "model",
+                        parts: [{ text: msg.content }]
+                    })),
+                    generationConfig: {
+                        maxOutputTokens: 1024, // TIẾP TỤC NGẮN GỌN
+                        temperature: 0.3,
+                        topP: 0.5,
+                        topK: 20,
+                    }
+                });
+
+                // PROMPT TIẾP TỤC TẬP TRUNG
+                const continuePrompt = "Hãy tiếp tục câu trả lời MỘT CÁCH NGẮN GỌN, chỉ tập trung vào thông tin quan trọng nhất. Không lặp lại nội dung cũ. Tối đa 100 từ.";
+                
+                const result = await currentChatSession.sendMessageStream(continuePrompt);
+                let continuedResponse = '';
+                
+                // Tìm tin nhắn bot cuối cùng
                 const lastBotMessageIndex = currentChat.messages.map((msg, idx) => 
                     msg.role === "assistant" ? idx : -1).filter(idx => idx !== -1).pop();
                 
                 if (lastBotMessageIndex !== undefined && lastBotMessageIndex >= 0) {
-                    // Thêm nội dung mới vào tin nhắn hiện có
-                    currentChat.messages[lastBotMessageIndex].content += " " + continuedReply;
-                    
-                    // Cập nhật UI
                     const botMessages = document.querySelectorAll('.bot-message');
-                    if (botMessages.length > 0) {
-                        const lastBotMessage = botMessages[botMessages.length - 1];
-                        lastBotMessage.querySelector('.message-content').innerHTML = 
-                            formatMessage(currentChat.messages[lastBotMessageIndex].content);
+                    const lastBotMessage = botMessages[botMessages.length - 1];
+                    const contentDiv = lastBotMessage.querySelector('.message-content');
+                    
+                    typingIndicator.classList.add("hidden");
+                    
+                    for await (const chunk of result.stream) {
+                        if (isStopped) break;
+                        
+                        const chunkText = chunk.text();
+                        continuedResponse += chunkText;
+                        
+                        // Cập nhật nội dung hiện tại
+                        currentChat.messages[lastBotMessageIndex].content += " " + chunkText;
+                        contentDiv.innerHTML = formatMessage(currentChat.messages[lastBotMessageIndex].content);
+                        scrollToBottom();
+                        
+                        await new Promise(resolve => setTimeout(resolve, 10));
                     }
                     
-                    saveChats();
-                    
-                    // Kiểm tra xem có cần tiếp tục không
-                    const isStillTruncated = continuedReply.length > 0 && !/[.!?]$/.test(continuedReply);
-                    if (isStillTruncated) {
-                        continueButtonContainer.classList.remove("hidden");
+                    if (!isStopped) {
+                        saveChats();
+                        
+                        const isStillTruncated = continuedResponse.length > 0 && !/[.!?]$/.test(continuedResponse);
+                        if (isStillTruncated) {
+                            continueButtonContainer.classList.remove("hidden");
+                        }
                     }
                 }
             } catch (error) {
@@ -514,46 +646,9 @@
             } finally {
                 isSending = false;
                 typingIndicator.classList.add("hidden");
+                stopButtonContainer.classList.add("hidden");
                 scrollToBottom();
             }
-        }
-
-        function displayTypingMessage(content, callback) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'bot-message';
-            messageDiv.innerHTML = '<div class="message-content"></div>';
-            chatMessages.appendChild(messageDiv);
-            scrollToBottom();
-
-            let i = 0;
-            const speed = 20;
-            const contentDiv = messageDiv.querySelector('.message-content');
-
-            if (typingInterval) clearInterval(typingInterval);
-            
-            typingIndicator.classList.add("hidden"); 
-            stopButtonContainer.classList.remove("hidden");
-            typingInterval = setInterval(() => {
-                if (isStopped) {
-                    clearInterval(typingInterval);
-                    typingInterval = null;
-                    contentDiv.innerHTML = formatMessage(content.substring(0, i));
-                    stopButtonContainer.classList.add("hidden");
-                    if (callback) callback();
-                    return;
-                }
-
-                if (i < content.length) {
-                    contentDiv.innerHTML = formatMessage(content.substring(0, i + 1));
-                    i++;
-                    scrollToBottom();
-                } else {
-                    clearInterval(typingInterval);
-                    typingInterval = null;
-                    stopButtonContainer.classList.add("hidden");
-                    if (callback) callback();
-                }
-            }, speed);
         }
 
         function addMessageToUI(role, content) {
