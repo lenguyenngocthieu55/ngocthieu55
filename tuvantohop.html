@@ -1,1067 +1,641 @@
 <!DOCTYPE html>
-<html lang="vi" dir="ltr">
+<html lang="vi">
 <head>
-    <meta charset="utf-8">
-    <title>Tư vấn chọn tổ hợp theo năng lực học tập</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot AI Tư Vấn Đại Học</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4f46e5',
+                        dark: {
+                            bg: '#0f172a',
+                            text: '#e2e8f0',
+                            sidebar: '#1e293b',
+                            hover: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: system-ui, sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .typing-dots::after {
+            content: '...';
+            animation: typing 1.5s infinite;
+        }
+        
+        @keyframes typing {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background-color: #4f46e5;
+            border-radius: 1rem;
+            max-width: 80%;
+            margin-left: auto;
+            padding: 0.75rem;
+        }
+        
+        .bot-message {
+            align-self: flex-start;
+            background-color: #1e293b;
+            border-radius: 1rem;
+            max-width: 80%;
+            margin-right: auto;
+            padding: 0.75rem;
+        }
+        
+        .typing-indicator {
+            align-self: flex-start;
+            background-color: #1e293b;
+            border-radius: 1rem;
+            max-width: 80%;
+            margin-right: auto;
+            padding: 0.75rem;
+        }
+        
+        .message-content {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .university-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            position: relative;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 0.5rem 0;
         }
         
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            padding-bottom: 80px;
+        .suggestion-chip {
+            display: inline-block;
+            background-color: #334155;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 20px;
+        .suggestion-chip:hover {
+            background-color: #4f46e5;
         }
         
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .card-header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 15px 20px;
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-        
-        .card-body {
-            padding: 20px;
-        }
-        
-        .grades-table {
+        .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin: 1rem 0;
         }
         
-        .grades-table th,
-        .grades-table td {
-            padding: 12px 8px;
-            text-align: center;
-            border: 1px solid #e0e0e0;
+        .info-table th, .info-table td {
+            border: 1px solid #475569;
+            padding: 0.5rem;
+            text-align: left;
         }
         
-        .grades-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: 600;
+        .info-table th {
+            background-color: #334155;
         }
         
-        .grades-table tr:nth-child(even) {
-            background-color: #f8f9ff;
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
         }
         
-        .subject-label {
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-            color: #333;
-            font-weight: 600;
-            text-align: left !important;
-            padding-left: 15px !important;
-        }
-        
-        .grade-input {
-            width: 100%;
-            padding: 8px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        
-        .grade-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            outline: none;
-        }
-        
-        .grade-input:invalid {
-            border-color: #ff6b6b;
-        }
-        
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: white;
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
-            color: white;
-        }
-        
-        .file-upload {
-            position: relative;
-            display: inline-block;
-            width: 100%;
-        }
-        
-        .file-input {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-        
-        .file-label {
-            display: block;
-            padding: 12px 20px;
-            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-            color: white;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-        
-        .file-label:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        .file-status {
-            margin-top: 10px;
-            padding: 8px 12px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            font-size: 13px;
-            color: #6c757d;
-            font-style: italic;
-        }
-        
-        .file-status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .result-container {
-            background: #f8f9ff;
-            border: 2px solid #e0e7ff;
-            border-radius: 12px;
-            padding: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-            margin-top: 20px;
-        }
-        
-        .result-content {
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            color: #333;
-            white-space: pre-line;
-        }
-        
-        .charts-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .chart-wrapper {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        }
-        
-        .chart-title {
-            text-align: center;
-            margin-bottom: 15px;
-            color: #333;
-            font-weight: 600;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: #667eea;
-        }
-        
-        .loading.show {
-            display: block;
-        }
-        
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 10px 0;
-            display: none;
-        }
-        
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 10px 0;
-            display: none;
-        }
-        
-        footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            text-align: center;
-            padding: 15px;
-            font-size: 14px;
-            color: #666;
-            border-top: 1px solid rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-        
-        @media (max-width: 768px) {
-            .charts-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .controls {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .grades-table th,
-            .grades-table td {
-                padding: 8px 4px;
-                font-size: 13px;
-            }
-        }
-        
-        .result-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .result-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-        
-        .result-container::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 4px;
-        }
-        
-        .result-container::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🎓 Tư vấn chọn tổ hợp</h1>
-            <p>Hệ thống tư vấn thông minh dựa trên năng lực học tập THCS</p>
-        </div>
+<body class="h-screen flex flex-col bg-dark-bg text-dark-text">
 
-        <div class="card">
-            <div class="card-header">
-                📊 Bảng điểm THCS (Lớp 6-9)
-            </div>
-            <div class="card-body">
-                <table class="grades-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 200px;">Môn học</th>
-                            <th>Lớp 6</th>
-                            <th>Lớp 7</th>
-                            <th>Lớp 8</th>
-                            <th>Lớp 9</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="subject-label">📚 Ngữ văn</td>
-                            <td><input class="grade-input" type="number" id="van6" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="van7" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="van8" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="van9" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                        </tr>
-                        <tr>
-                            <td class="subject-label">🔢 Toán</td>
-                            <td><input class="grade-input" type="number" id="toan6" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="toan7" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="toan8" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="toan9" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                        </tr>
-                        <tr>
-                            <td class="subject-label">🌍 Ngoại ngữ</td>
-                            <td><input class="grade-input" type="number" id="anh6" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="anh7" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="anh8" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="anh9" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                        </tr>
-                        <tr>
-                            <td class="subject-label">🏛️ Giáo dục công dân</td>
-                            <td><input class="grade-input" type="number" id="gdcd6" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="gdcd7" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="gdcd8" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="gdcd9" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                        </tr>
-                        <tr>
-                            <td class="subject-label">🗺️ Lịch sử - Địa lý</td>
-                            <td><input class="grade-input" type="number" id="lsdl6" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="lsdl7" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="lsdl8" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="lsdl9" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                        </tr>
-                        <tr>
-                            <td class="subject-label">🔬 Khoa học tự nhiên</td>
-                            <td><input class="grade-input" type="number" id="khtn6" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="khtn7" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="khtn8" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="khtn9" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                        </tr>
-                        <tr>
-                            <td class="subject-label">⚙️ Công nghệ</td>
-                            <td><input class="grade-input" type="number" id="cn6" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="cn7" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="cn8" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="cn9" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                        </tr>
-                        <tr>
-                            <td class="subject-label">💻 Tin học</td>
-                            <td><input class="grade-input" type="number" id="th6" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="th7" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="th8" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="hoatdong9" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                        </tr>  
-                        </tr>
-                        <tr>
-                            <td class="subject-label">🎨 Nghệ thuật</td>
-                            <td><input class="grade-input" type="number" id="nghethuat6" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="nghethuat7" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="nghethuat8" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="nghethuat9" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                        </tr>
-                        <tr>
-                            <td class="subject-label">🎯 Hoạt động trải nghiệm</td>
-                            <td><input class="grade-input" type="number" id="hoatdong6" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="hoatdong7" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="hoatdong8" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                            <td><input class="grade-input" type="number" id="hoatdong9" min="0" max="10" step="0.1" placeholder="0.0"></td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div id="app" class="flex flex-1 overflow-hidden">
+        <!-- Sidebar đơn giản -->
+        <div id="sidebar" class="w-16 bg-dark-sidebar border-r border-gray-700 flex flex-col h-full">
+            <div class="p-3">
+                <button id="new-chat-btn" class="w-10 h-10 flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-md transition">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-header">
-                 Điều khiển
-            </div>
-            <div class="card-body">
-                <div class="controls">
-                    <div class="file-upload">
-                        <input type="file" id="excelFile" class="file-input" accept=".xlsx,.xls">
-                        <label for="excelFile" class="file-label">📁 Chọn file Excel</label>
-                    </div>
-                    <button class="btn btn-primary" id="readFile">📖 Đọc dữ liệu</button>
-                    <button class="btn btn-success" id="analyze">🎯 Phân tích tư vấn</button>
-                    <button class="btn btn-danger" id="clearData">🗑️ Xóa dữ liệu</button>
-                </div>
-                
-                <div class="file-status" id="fileStatus">Chưa chọn file nào</div>
-                <div class="error-message" id="errorMessage"></div>
-                <div class="success-message" id="successMessage"></div>
-                <div class="loading" id="loading">⏳ Đang xử lý...</div>
-                
-                <div class="result-container">
-                    <div class="result-content" id="results">
-Chào mừng bạn đến với hệ thống tư vấn chọn tổ hợp học tập! 🎓
-
-📋 HƯỚNG DẪN SỬ DỤNG:
-1. Nhập điểm các môn từ lớp 6-9 vào bảng trên
-2. Hoặc tải file Excel có sẵn và nhấn "Đọc dữ liệu"
-3. Nhấn "Phân tích tư vấn" để xem kết quả
-
-💡 LƯU Ý:
-- Điểm từ 0-10, có thể để trống nếu không có
-- Hệ thống sẽ tự động tính toán và đưa ra gợi ý phù hợp
-- Biểu đồ trực quan sẽ hiển thị năng lực của bạn
-
-Hãy bắt đầu nhập dữ liệu để nhận được tư vấn cá nhân hóa! ✨
+        
+        <!-- Main Chat Area -->
+        <div class="flex-1 flex flex-col h-full overflow-hidden">
+            <header class="p-4 border-b border-gray-700 bg-dark-bg">
+                <h1 class="text-xl font-semibold text-left">Chatbot AI Tư Vấn Đại Học</h1>
+            </header>
+            
+            <div id="chat-container" class="flex-1 overflow-y-auto hide-scrollbar p-4 bg-gray-900 flex flex-col gap-3">
+                <div id="chat-messages" class="flex flex-col gap-3 mx-auto max-w-3xl w-full">
+                    <!-- Welcome message chuyên về đại học -->
+                    <div class="bot-message fade-in">
+                        <div class="message-content">
+                            <h3 class="font-semibold mb-2">🎓 Chào mừng đến với Chatbot Tư Vấn Đại Học!</h3>
+                            <p>Tôi có thể giúp bạn:</p>
+                            <ul class="list-disc pl-5 mt-2 space-y-1">
+                                <li>Tư vấn chọn ngành, chọn trường Đại học</li>
+                                <li>Thông tin tổ hợp môn thi, điểm chuẩn</li>
+                                <li>Định hướng nghề nghiệp sau đại học</li>
+                                <li>Tư vấn tuyển sinh, hồ sơ đăng ký</li>
+                                <li>Thông tin học phí và chính sách học bổng</li>
+                            </ul>
+                            <p class="mt-3">Hãy hỏi tôi về bất kỳ thắc mắc nào liên quan đến đại học!</p>
+                            
+                            <div class="mt-4">
+                                <p class="mb-2">Một số câu hỏi gợi ý:</p>
+                                <div class="flex flex-wrap">
+                                    <span class="suggestion-chip" data-question="Điểm chuẩn Đại học Bách Khoa Hà Nội năm 2023?">Điểm chuẩn Bách Khoa Hà Nội</span>
+                                    <span class="suggestion-chip" data-question="Học phí Đại học Kinh tế Quốc dân?">Học phí NEU</span>
+                                    <span class="suggestion-chip" data-question="Ngành Công nghệ thông tin thi khối nào?">Ngành CNTT thi khối gì?</span>
+                                    <span class="suggestion-chip" data-question="Điểm chuẩn Đại học Y Hà Nội?">Điểm chuẩn Y Hà Nội</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                📊 Biểu đồ năng lực học tập
+            
+            <div id="typing-indicator" class="hidden max-w-3xl mx-auto p-4 mb-4">
+                <span class="typing-dots">AI đang phân tích câu hỏi về đại học</span>
             </div>
-            <div class="card-body">
-                <div class="charts-container">
-                    <div class="chart-wrapper">
-                        <h3 class="chart-title">📈 Điểm trung bình các môn</h3>
-                        <canvas id="barChart"></canvas>
-                    </div>
-                    <div class="chart-wrapper">
-                        <h3 class="chart-title">🎯 Biểu đồ radar năng lực</h3>
-                        <canvas id="radarChart"></canvas>
-                    </div>
+
+            <div class="p-4 border-t border-gray-700 bg-dark-bg">
+                <div class="max-w-3xl mx-auto">
+                    <form id="chat-form" class="relative">
+                        <textarea 
+                            id="message-input" 
+                            class="w-full p-4 rounded-lg border border-gray-600 bg-dark-hover resize-none focus:outline-none focus:ring-2 focus:ring-primary text-white"
+                            placeholder="Nhập câu hỏi về đại học, ngành học, tuyển sinh..."
+                            rows="1"
+                        ></textarea>
+                        <button type="submit" class="absolute right-3 bottom-3 bg-primary hover:bg-primary/90 text-white p-2 rounded-md transition">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer>
-        🏆 Cuộc thi khoa học kỹ thuật cấp trường - Hệ thống tư vấn học tập thông minh
-    </footer>
-
-    <script>
-        class GradeAdvisor {
-            constructor() {
-                this.barChart = null;
-                this.radarChart = null;
-                this.subjects = [
-                    'van', 'toan', 'anh', 'gdcd', 'lsdl', 'khtn', 'cn', 'th', 'nghethuat', 'hoatdong'
-                ];
-                this.subjectNames = {
-                    'van': 'Ngữ văn',
-                    'toan': 'Toán',
-                    'anh': 'Ngoại ngữ',
-                    'gdcd': 'GDCD',
-                    'lsdl': 'Lịch sử - Địa lý',
-                    'khtn': 'Khoa học tự nhiên',
-                    'cn': 'Công nghệ',
-                    'th': 'Tin học',
-                    'nghethuat': 'Nghệ thuật',
-                    'hoatdong': 'Hoạt động trải nghiệm'
-                };
-                this.init();
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/generative-ai": "https://esm.run/@google/generative-ai"
             }
+        }
+    </script>
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
 
-            init() {
-                this.bindEvents();
-                this.setupValidation();
-            }
+        const API_KEY = "AIzaSyCdMh5gnSHnwW0S4OpFt8Y8EkpyH7tLLas";
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-01-21" });
 
-            bindEvents() {
-                document.getElementById('excelFile').addEventListener('change', (e) => this.handleFileSelect(e));
-                document.getElementById('readFile').addEventListener('click', () => this.readExcelFile());
-                document.getElementById('analyze').addEventListener('click', () => this.analyzeGrades());
-                document.getElementById('clearData').addEventListener('click', () => this.clearAllData());
-            }
+        // ==================== DỮ LIỆU TƯ VẤN ĐẠI HỌC CHI TIẾT ====================
+        const UNIVERSITY_ADVICE_DATA = {
+            subjectCombinations: {
+                "A00": ["Toán", "Vật lý", "Hóa học"],
+                "A01": ["Toán", "Vật lý", "Tiếng Anh"], 
+                "B00": ["Toán", "Hóa học", "Sinh học"],
+                "C00": ["Ngữ văn", "Lịch sử", "Địa lý"],
+                "D01": ["Toán", "Ngữ văn", "Tiếng Anh"],
+                "D07": ["Toán", "Hóa học", "Tiếng Anh"],
+                "D90": ["Toán", "Khoa học tự nhiên", "Tiếng Anh"]
+            },
 
-            setupValidation() {
-                // Thêm validation cho input
-                document.querySelectorAll('.grade-input').forEach(input => {
-                    input.addEventListener('input', (e) => {
-                        const value = parseFloat(e.target.value);
-                        if (value < 0 || value > 10) {
-                            e.target.style.borderColor = '#ff6b6b';
-                        } else {
-                            e.target.style.borderColor = '#e0e0e0';
-                        }
-                    });
-                });
-            }
-
-            showMessage(message, type = 'success') {
-                const errorEl = document.getElementById('errorMessage');
-                const successEl = document.getElementById('successMessage');
-                
-                if (type === 'error') {
-                    errorEl.textContent = message;
-                    errorEl.style.display = 'block';
-                    successEl.style.display = 'none';
-                } else {
-                    successEl.textContent = message;
-                    successEl.style.display = 'block';
-                    errorEl.style.display = 'none';
-                }
-                
-                setTimeout(() => {
-                    errorEl.style.display = 'none';
-                    successEl.style.display = 'none';
-                }, 5000);
-            }
-
-            showLoading(show = true) {
-                document.getElementById('loading').classList.toggle('show', show);
-            }
-
-            handleFileSelect(event) {
-                const file = event.target.files[0];
-                const statusEl = document.getElementById('fileStatus');
-                
-                if (file) {
-                    statusEl.textContent = `✅ Đã chọn: ${file.name}`;
-                    statusEl.classList.add('success');
-                } else {
-                    statusEl.textContent = 'Chưa chọn file nào';
-                    statusEl.classList.remove('success');
-                }
-            }
-
-            async readExcelFile() {
-                const fileInput = document.getElementById('excelFile');
-                const file = fileInput.files[0];
-                
-                if (!file) {
-                    this.showMessage('Vui lòng chọn file Excel trước!', 'error');
-                    return;
-                }
-
-                this.showLoading(true);
-                
-                try {
-                    const arrayBuffer = await file.arrayBuffer();
-                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[sheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                    
-                    if (jsonData.length === 0) {
-                        throw new Error('File Excel không chứa dữ liệu');
-                    }
-
-                    this.populateDataFromExcel(jsonData[0]);
-                    this.showMessage('✅ Đọc dữ liệu từ file Excel thành công!');
-                    
-                } catch (error) {
-                    console.error('Lỗi đọc file:', error);
-                    this.showMessage(`❌ Lỗi đọc file: ${error.message}`, 'error');
-                } finally {
-                    this.showLoading(false);
-                }
-            }
-
-            populateDataFromExcel(data) {
-                // Mapping các tên cột có thể có trong Excel
-                const columnMappings = {
-                    'van': ['Van6', 'Van7', 'Van8', 'Van9', 'Ngữ văn 6', 'Ngữ văn 7', 'Ngữ văn 8', 'Ngữ văn 9'],
-                    'toan': ['Toan6', 'Toan7', 'Toan8', 'Toan9', 'Toán 6', 'Toán 7', 'Toán 8', 'Toán 9'],
-                    'anh': ['Anh6', 'Anh7', 'Anh8', 'Anh9', 'Ngoại ngữ 6', 'Ngoại ngữ 7', 'Ngoại ngữ 8', 'Ngoại ngữ 9'],
-                    'gdcd': ['GDCD6', 'GDCD7', 'GDCD8', 'GDCD9', 'Giáo dục công dân 6', 'Giáo dục công dân 7', 'Giáo dục công dân 8', 'Giáo dục công dân 9'],
-                    'lsdl': ['LSDL6', 'LSDL7', 'LSDL8', 'LSDL9', 'Lịch sử - Địa lý 6', 'Lịch sử - Địa lý 7', 'Lịch sử - Địa lý 8', 'Lịch sử - Địa lý 9'],
-                    'khtn': ['KHTN6', 'KHTN7', 'KHTN8', 'KHTN9', 'Khoa học tự nhiên 6', 'Khoa học tự nhiên 7', 'Khoa học tự nhiên 8', 'Khoa học tự nhiên 9'],
-                    'cn': ['CN6', 'CN7', 'CN8', 'CN9', 'Công nghệ 6', 'Công nghệ 7', 'Công nghệ 8', 'Công nghệ 9'],
-                    'th': ['TH6', 'TH7', 'TH8', 'TH9', 'Tin học 6', 'Tin học 7', 'Tin học 8', 'Tin học 9'],
-                    'nghethuat': ['NT6', 'NT7', 'NT8', 'NT9', 'Nghệ thuật 6', 'Nghệ thuật 7', 'Nghệ thuật 8', 'Nghệ thuật 9'],
-                    'hoatdong': ['HD6', 'HD7', 'HD8', 'HD9', 'Hoạt động trải nghiệm 6', 'Hoạt động trải nghiệm 7', 'Hoạt động trải nghiệm 8', 'Hoạt động trải nghiệm 9']
-                };
-
-                this.subjects.forEach(subject => {
-                    for (let grade = 6; grade <= 9; grade++) {
-                        const inputId = `${subject}${grade}`;
-                        const input = document.getElementById(inputId);
-                        if (input) {
-                            const possibleColumns = columnMappings[subject] || [];
-                            let value = '';
-                            
-                            // Tìm giá trị từ các cột có thể có
-                            for (const col of possibleColumns) {
-                                if (col.includes(grade.toString()) && data[col] !== undefined) {
-                                    value = data[col] || '';
-                                    break;
-                                }
-                            }
-                            
-                            input.value = value;
-                        }
-                    }
-                });
-            }
-
-            calculateAverage(scores) {
-                const validScores = scores.filter(score => score > 0 && !isNaN(score));
-                return validScores.length > 0 
-                    ? (validScores.reduce((sum, score) => sum + score, 0) / validScores.length).toFixed(1)
-                    : 0;
-            }
-
-            getSubjectAverages() {
-                const averages = {};
-                
-                this.subjects.forEach(subject => {
-                    const scores = [];
-                    for (let grade = 6; grade <= 9; grade++) {
-                        const input = document.getElementById(`${subject}${grade}`);
-                        if (input && input.value) {
-                            const score = parseFloat(input.value);
-                            if (!isNaN(score) && score >= 0 && score <= 10) {
-                                scores.push(score);
-                            }
-                        }
-                    }
-                    averages[subject] = parseFloat(this.calculateAverage(scores));
-                });
-                
-                return averages;
-            }
-
-            createCharts(averages) {
-                const ctx1 = document.getElementById('barChart').getContext('2d');
-                const ctx2 = document.getElementById('radarChart').getContext('2d');
-                
-                // Destroy existing charts
-                if (this.barChart) this.barChart.destroy();
-                if (this.radarChart) this.radarChart.destroy();
-                
-                const labels = Object.keys(averages).map(key => this.subjectNames[key]);
-                const data = Object.values(averages);
-                
-                // Bar Chart
-                this.barChart = new Chart(ctx1, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Điểm trung bình',
-                            data: data,
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.8)',
-                                'rgba(54, 162, 235, 0.8)',
-                                'rgba(255, 205, 86, 0.8)',
-                                'rgba(75, 192, 192, 0.8)',
-                                'rgba(153, 102, 255, 0.8)',
-                                'rgba(255, 159, 64, 0.8)',
-                                'rgba(201, 203, 207, 0.8)',
-                                'rgba(255, 99, 255, 0.8)',
-                                'rgba(99, 255, 132, 0.8)',
-                                'rgba(132, 99, 255, 0.8)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 205, 86, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)',
-                                'rgba(201, 203, 207, 1)',
-                                'rgba(255, 99, 255, 1)',
-                                'rgba(99, 255, 132, 1)',
-                                'rgba(132, 99, 255, 1)'
-                            ],
-                            borderWidth: 2
-                        }]
+            universities: {
+                "Đại học Bách Khoa Hà Nội": {
+                    location: "Hà Nội",
+                    type: "Công lập",
+                    popularMajors: ["Công nghệ thông tin", "Kỹ thuật điện", "Cơ khí", "Xây dựng"],
+                    admissionInfo: {
+                        "Công nghệ thông tin": {combinations: ["A00", "A01"], benchmark: 27.5, tuition: "18-22 triệu/năm"},
+                        "Kỹ thuật điện": {combinations: ["A00", "A01"], benchmark: 25.5, tuition: "18-22 triệu/năm"},
+                        "Cơ khí": {combinations: ["A00", "A01"], benchmark: 24.5, tuition: "18-22 triệu/năm"}
                     },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 10,
-                                ticks: {
-                                    stepSize: 1
-                                }
-                            },
-                            x: {
-                                ticks: {
-                                    maxRotation: 45
-                                }
-                            }
-                        }
-                    }
-                });
-                
-                // Radar Chart
-                this.radarChart = new Chart(ctx2, {
-                    type: 'radar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Năng lực học tập',
-                            data: data,
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 2,
-                            pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5
-                        }]
+                    scholarships: "Nhiều học bổng từ 30-100% học phí"
+                },
+                "Đại học Kinh tế Quốc dân": {
+                    location: "Hà Nội",
+                    type: "Công lập",
+                    popularMajors: ["Quản trị kinh doanh", "Tài chính ngân hàng", "Kế toán"],
+                    admissionInfo: {
+                        "Quản trị kinh doanh": {combinations: ["A00", "A01", "D01"], benchmark: 28.25, tuition: "15-20 triệu/năm"},
+                        "Tài chính ngân hàng": {combinations: ["A00", "A01", "D01"], benchmark: 27.75, tuition: "15-20 triệu/năm"},
+                        "Kế toán": {combinations: ["A00", "A01", "D01"], benchmark: 27.5, tuition: "15-20 triệu/năm"}
                     },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            r: {
-                                beginAtZero: true,
-                                max: 10,
-                                ticks: {
-                                    stepSize: 2
-                                }
-                            }
-                        }
-                    }
-                });
+                    scholarships: "Học bổng tài năng, học bổng khuyến khích học tập"
+                },
+                "Đại học Y Hà Nội": {
+                    location: "Hà Nội",
+                    type: "Công lập",
+                    popularMajors: ["Y đa khoa", "Dược học", "Răng hàm mặt"],
+                    admissionInfo: {
+                        "Y đa khoa": {combinations: ["B00", "A00"], benchmark: 28.75, tuition: "25-35 triệu/năm"},
+                        "Dược học": {combinations: ["B00", "A00"], benchmark: 28.25, tuition: "25-35 triệu/năm"},
+                        "Răng hàm mặt": {combinations: ["B00", "A00"], benchmark: 28.5, tuition: "25-35 triệu/năm"}
+                    },
+                    scholarships: "Học bổng cho sinh viên xuất sắc, sinh viên khó khăn"
+                },
+                "Đại học Ngoại thương": {
+                    location: "Hà Nội, TP.HCM",
+                    type: "Công lập",
+                    popularMajors: ["Kinh tế quốc tế", "Quản trị kinh doanh", "Marketing"],
+                    admissionInfo: {
+                        "Kinh tế quốc tế": {combinations: ["A00", "A01", "D01", "D07"], benchmark: 28.5, tuition: "18-25 triệu/năm"},
+                        "Quản trị kinh doanh": {combinations: ["A00", "A01", "D01", "D07"], benchmark: 28.25, tuition: "18-25 triệu/năm"},
+                        "Marketing": {combinations: ["A00", "A01", "D01", "D07"], benchmark: 27.75, tuition: "18-25 triệu/năm"}
+                    },
+                    scholarships: "Nhiều học bổng từ doanh nghiệp và quỹ học bổng"
+                },
+                "Đại học Bách Khoa TP.HCM": {
+                    location: "TP.HCM",
+                    type: "Công lập",
+                    popularMajors: ["Công nghệ thông tin", "Kỹ thuật điện - điện tử", "Cơ khí"],
+                    admissionInfo: {
+                        "Công nghệ thông tin": {combinations: ["A00", "A01"], benchmark: 27.25, tuition: "20-25 triệu/năm"},
+                        "Kỹ thuật điện - điện tử": {combinations: ["A00", "A01"], benchmark: 25.75, tuition: "20-25 triệu/năm"},
+                        "Cơ khí": {combinations: ["A00", "A01"], benchmark: 25.25, tuition: "20-25 triệu/năm"}
+                    },
+                    scholarships: "Học bổng toàn phần, bán phần từ nhiều nguồn"
+                },
+                "Đại học Khoa học Xã hội và Nhân văn": {
+                    location: "Hà Nội, TP.HCM",
+                    type: "Công lập",
+                    popularMajors: ["Báo chí", "Quan hệ quốc tế", "Ngôn ngữ Anh"],
+                    admissionInfo: {
+                        "Báo chí": {combinations: ["C00", "D01", "D14"], benchmark: 26.5, tuition: "10-15 triệu/năm"},
+                        "Quan hệ quốc tế": {combinations: ["C00", "D01", "D14"], benchmark: 26.25, tuition: "10-15 triệu/năm"},
+                        "Ngôn ngữ Anh": {combinations: ["D01", "D14", "D15"], benchmark: 25.75, tuition: "10-15 triệu/năm"}
+                    },
+                    scholarships: "Học bổng theo kết quả học tập"
+                },
+                "Đại học Cần Thơ": {
+                    location: "Cần Thơ",
+                    type: "Công lập",
+                    popularMajors: ["Nông nghiệp", "Công nghệ thực phẩm", "Thủy sản"],
+                    admissionInfo: {
+                        "Nông nghiệp": {combinations: ["A00", "B00", "D07"], benchmark: 22.5, tuition: "8-12 triệu/năm"},
+                        "Công nghệ thực phẩm": {combinations: ["A00", "B00", "D07"], benchmark: 23.5, tuition: "8-12 triệu/năm"},
+                        "Thủy sản": {combinations: ["A00", "B00", "D07"], benchmark: 22.0, tuition: "8-12 triệu/năm"}
+                    },
+                    scholarships: "Học bổng cho sinh viên vùng ĐBSCL"
+                },
+                "Đại học Đà Nẵng": {
+                    location: "Đà Nẵng",
+                    type: "Công lập",
+                    popularMajors: ["Công nghệ thông tin", "Du lịch", "Kỹ thuật xây dựng"],
+                    admissionInfo: {
+                        "Công nghệ thông tin": {combinations: ["A00", "A01"], benchmark: 25.5, tuition: "12-16 triệu/năm"},
+                        "Du lịch": {combinations: ["A00", "A01", "D01", "C00"], benchmark: 24.0, tuition: "10-14 triệu/năm"},
+                        "Kỹ thuật xây dựng": {combinations: ["A00", "A01"], benchmark: 24.5, tuition: "12-16 triệu/năm"}
+                    },
+                    scholarships: "Học bổng khuyến khích học tập, học bổng doanh nghiệp"
+                },
+                "Đại học FPT": {
+                    location: "Hà Nội, TP.HCM, Đà Nẵng, Cần Thơ",
+                    type: "Tư thục",
+                    popularMajors: ["Công nghệ thông tin", "Quản trị kinh doanh", "Ngôn ngữ Anh"],
+                    admissionInfo: {
+                        "Công nghệ thông tin": {combinations: ["A00", "A01", "D01", "D90"], benchmark: "Xét học bạ/ĐGNL", tuition: "25-30 triệu/kỳ"},
+                        "Quản trị kinh doanh": {combinations: ["A00", "A01", "D01", "D90"], benchmark: "Xét học bạ/ĐGNL", tuition: "22-28 triệu/kỳ"},
+                        "Ngôn ngữ Anh": {combinations: ["A00", "A01", "D01", "D90"], benchmark: "Xét học bạ/ĐGNL", tuition: "20-25 triệu/kỳ"}
+                    },
+                    scholarships: "Học bổng tài năng lên đến 100% học phí"
+                },
+                "Đại học Tôn Đức Thắng": {
+                    location: "TP.HCM",
+                    type: "Công lập",
+                    popularMajors: ["Công nghệ thông tin", "Quản trị kinh doanh", "Kỹ thuật điện"],
+                    admissionInfo: {
+                        "Công nghệ thông tin": {combinations: ["A00", "A01"], benchmark: 26.0, tuition: "15-20 triệu/năm"},
+                        "Quản trị kinh doanh": {combinations: ["A00", "A01", "D01"], benchmark: 25.5, tuition: "15-20 triệu/năm"},
+                        "Kỹ thuật điện": {combinations: ["A00", "A01"], benchmark: 24.5, tuition: "15-20 triệu/năm"}
+                    },
+                    scholarships: "Nhiều học bổng cho sinh viên xuất sắc"
+                }
+            },
+
+            popularMajors: {
+                "Công nghệ thông tin": {
+                    combinations: ["A00", "A01", "D01"],
+                    universities: ["Bách Khoa Hà Nội", "Bách Khoa TP.HCM", "FPT", "Tôn Đức Thắng"],
+                    career: "Lập trình viên, Kỹ sư phần mềm, Quản trị hệ thống",
+                    salary: "10-30 triệu/tháng (tùy kinh nghiệm)"
+                },
+                "Y khoa": {
+                    combinations: ["B00", "A00"],
+                    universities: ["Y Hà Nội", "Y Dược TP.HCM"],
+                    career: "Bác sĩ đa khoa, Bác sĩ chuyên khoa",
+                    salary: "15-50 triệu/tháng (tùy chuyên khoa và kinh nghiệm)"
+                },
+                "Kinh tế": {
+                    combinations: ["A00", "A01", "D01"],
+                    universities: ["Kinh tế Quốc dân", "Ngoại thương", "Kinh tế TP.HCM"],
+                    career: "Quản trị kinh doanh, Tài chính ngân hàng, Kế toán",
+                    salary: "8-25 triệu/tháng (tùy vị trí và kinh nghiệm)"
+                },
+                "Luật": {
+                    combinations: ["C00", "A00", "D01"],
+                    universities: ["Luật Hà Nội", "Kinh tế Luật TP.HCM"],
+                    career: "Luật sư, Cố vấn pháp lý, Kiểm soát viên",
+                    salary: "10-40 triệu/tháng (tùy kinh nghiệm và lĩnh vực)"
+                },
+                "Kiến trúc": {
+                    combinations: ["V00", "V01", "V02"],
+                    universities: ["Kiến trúc Hà Nội", "Kiến trúc TP.HCM"],
+                    career: "Kiến trúc sư, Thiết kế nội thất, Quy hoạch đô thị",
+                    salary: "10-30 triệu/tháng (tùy kinh nghiệm)"
+                }
             }
+        };
 
-            getVocationalRecommendations(averages) {
-                const { van, toan, anh, gdcd, lsdl, khtn, cn, th } = averages;
-                const recommendations = [];
-                
-                // Sắp xếp môn theo điểm cao nhất
-                const sortedSubjects = [
-                    { name: 'Toán', score: toan },
-                    { name: 'Khoa học tự nhiên', score: khtn },
-                    { name: 'Công nghệ', score: cn },
-                    { name: 'Tin học', score: th },
-                    { name: 'Ngữ văn', score: van },
-                    { name: 'Ngoại ngữ', score: anh },
-                    { name: 'Lịch sử - Địa lý', score: lsdl },
-                    { name: 'GDCD', score: gdcd }
-                ].sort((a, b) => b.score - a.score);
-                
-                const topSubject = sortedSubjects[0];
-                const secondSubject = sortedSubjects[1];
-                
-                if (topSubject.score < 5.0) {
-                    recommendations.push("📚 Hiện tại điểm số các môn đều thấp, bạn nên:");
-                    recommendations.push("• Tập trung cải thiện học lực cơ bản");
-                    recommendations.push("• Tham gia các lớp học thêm");
-                    recommendations.push("• Xây dựng nền tảng kiến thức vững chắc");
-                    return recommendations;
-                }
-                
-                recommendations.push("🎯 DỰA VÀO ĐIỂM MẠNH CỦA BẠN:");
-                recommendations.push(`🥇 Môn giỏi nhất: ${topSubject.name} (${topSubject.score})`);
-                recommendations.push(`🥈 Môn tốt thứ hai: ${secondSubject.name} (${secondSubject.score})`);
-                recommendations.push("");
-                recommendations.push("🏭 GỢI Ý NGHỀ NGHIỆP PHÙ HỢP:");
-                
-                // Logic gợi ý nghề dựa trên điểm mạnh
-                if (toan >= 7.0 && khtn >= 7.0) {
-                    recommendations.push("• Kỹ sư cơ khí, điện, xây dựng");
-                    recommendations.push("• Công nghệ thông tin, lập trình");
-                    recommendations.push("• Khoa học máy tính, AI");
-                } else if (toan >= 6.5 || khtn >= 6.5) {
-                    recommendations.push("• Kỹ thuật viên điện tử");
-                    recommendations.push("• Công nhân kỹ thuật cao");
-                    recommendations.push("• Vận hành máy móc");
-                }
-                
-                if (th >= 7.0) {
-                    recommendations.push("• Lập trình viên, thiết kế web");
-                    recommendations.push("• Quản trị mạng, bảo mật");
-                    recommendations.push("• Thiết kế đồ họa số");
-                }
-                
-                if (van >= 7.0 && anh >= 7.0) {
-                    recommendations.push("• Dịch thuật, biên phiên dịch");
-                    recommendations.push("• Báo chí, truyền thông");
-                    recommendations.push("• Giáo dục, đào tạo");
-                } else if (van >= 6.5) {
-                    recommendations.push("• Nhân viên văn phòng, thư ký");
-                    recommendations.push("• Dịch vụ khách hàng");
-                    recommendations.push("• Hành chính, nhân sự");
-                }
-                
-                if (anh >= 7.0) {
-                    recommendations.push("• Du lịch, khách sạn");
-                    recommendations.push("• Thương mại quốc tế");
-                    recommendations.push("• Hướng dẫn viên du lịch");
-                }
-                
-                if (lsdl >= 7.0) {
-                    recommendations.push("• Quản lý du lịch");
-                    recommendations.push("• Nghiên cứu xã hội");
-                    recommendations.push("• Công tác xã hội");
-                }
-                
-                return recommendations;
-            }
+        // Biến toàn cục
+        const chatContainer = document.getElementById('chat-container');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const typingIndicator = document.getElementById('typing-indicator');
 
-            getAcademicRecommendations(averages) {
-                const { van, toan, anh, lsdl, khtn } = averages;
-                const combinations = [];
-                
-                // Kiểm tra các tổ hợp đại học
-                if (toan >= 7.0 && khtn >= 7.0) {
-                    if (anh >= 7.0) {
-                        combinations.push({
-                            name: "A01 (Toán, Lý, Anh)",
-                            score: ((toan * 0.4) + (khtn * 0.3) + (anh * 0.3)).toFixed(1),
-                            fields: ["Công nghệ thông tin", "Kỹ thuật", "Khoa học máy tính"]
-                        });
-                    }
-                    combinations.push({
-                        name: "A00 (Toán, Lý, Hóa)",
-                        score: ((toan * 0.5) + (khtn * 0.5)).toFixed(1),
-                        fields: ["Kỹ thuật", "Y dược", "Khoa học tự nhiên"]
-                    });
-                    combinations.push({
-                        name: "B00 (Toán, Hóa, Sinh)",
-                        score: ((toan * 0.4) + (khtn * 0.6)).toFixed(1),
-                        fields: ["Y dược", "Sinh học", "Nông nghiệp"]
-                    });
-                }
-                
-                if (van >= 7.0 && lsdl >= 7.0) {
-                    combinations.push({
-                        name: "C00 (Văn, Sử, Địa)",
-                        score: ((van * 0.5) + (lsdl * 0.5)).toFixed(1),
-                        fields: ["Ngôn ngữ học", "Lịch sử", "Địa lý", "Báo chí"]
-                    });
-                }
-                
-                if (toan >= 7.0 && van >= 7.0 && anh >= 7.0) {
-                    combinations.push({
-                        name: "D01 (Toán, Văn, Anh)",
-                        score: ((toan * 0.4) + (van * 0.3) + (anh * 0.3)).toFixed(1),
-                        fields: ["Kinh tế", "Quản trị kinh doanh", "Tài chính"]
-                    });
-                }
-                
-                return combinations.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
-            }
+        let chats = [];
+        let currentChatId = null;
+        let isSending = false;
 
-            analyzeGrades() {
-                this.showLoading(true);
-                
-                setTimeout(() => {
-                    try {
-                        const averages = this.getSubjectAverages();
-                        const hasValidData = Object.values(averages).some(score => score > 0);
-                        
-                        if (!hasValidData) {
-                            throw new Error('Chưa có dữ liệu điểm để phân tích');
-                        }
-                        
-                        // Tạo biểu đồ
-                        this.createCharts(averages);
-                        
-                        // Tính điểm trung bình chung
-                        const allScores = Object.values(averages).filter(score => score > 0);
-                        const overallAverage = allScores.length > 0 
-                            ? (allScores.reduce((sum, score) => sum + score, 0) / allScores.length).toFixed(1)
-                            : 0;
-                        
-                        // Tạo báo cáo
-                        let report = "═══════════════════════════════════════\n";
-                        report += "📊 BÁO CÁO PHÂN TÍCH NĂNG LỰC HỌC TẬP\n";
-                        report += "═══════════════════════════════════════\n\n";
-                        
-                        report += `🎯 ĐIỂM TRUNG BÌNH CHUNG: ${overallAverage}/10\n\n`;
-                        
-                        report += "📈 ĐIỂM TRUNG BÌNH CÁC MÔN:\n";
-                        Object.entries(averages).forEach(([subject, score]) => {
-                            if (score > 0) {
-                                const emoji = score >= 8 ? "🏆" : score >= 6.5 ? "⭐" : score >= 5 ? "📚" : "📉";
-                                report += `${emoji} ${this.subjectNames[subject]}: ${score}/10\n`;
-                            }
-                        });
-                        
-                        report += "\n───────────────────────────────────────\n\n";
-                        
-                        // Phân tích học đại học
-                        const academicCombinations = this.getAcademicRecommendations(averages);
-                        if (academicCombinations.length > 0) {
-                            report += "🎓 KHUYẾN NGHỊ HỌC ĐẠI HỌC:\n\n";
-                            academicCombinations.forEach((combo, index) => {
-                                report += `${index + 1}. ${combo.name}\n`;
-                                report += `   📊 Điểm ước tính: ${combo.score}/10\n`;
-                                report += `   🏫 Lĩnh vực: ${combo.fields.join(", ")}\n\n`;
-                            });
-                            report += "───────────────────────────────────────\n\n";
-                        }
-                        
-                        // Gợi ý nghề nghiệp
-                        const vocationalRecommendations = this.getVocationalRecommendations(averages);
-                        vocationalRecommendations.forEach(rec => {
-                            report += rec + "\n";
-                        });
-                        
-                        report += "\n───────────────────────────────────────\n";
-                        report += "💡 LỜI KHUYÊN PHÁT TRIỂN:\n\n";
-                        
-                        // Phân tích điểm mạnh và yếu
-                        const sortedSubjects = Object.entries(averages)
-                            .filter(([_, score]) => score > 0)
-                            .sort(([_, a], [__, b]) => b - a);
-                        
-                        if (sortedSubjects.length > 0) {
-                            const strongest = sortedSubjects[0];
-                            const weakest = sortedSubjects[sortedSubjects.length - 1];
-                            
-                            report += `✨ Điểm mạnh: ${this.subjectNames[strongest[0]]} (${strongest[1]})\n`;
-                            report += `📚 Cần cải thiện: ${this.subjectNames[weakest[0]]} (${weakest[1]})\n\n`;
-                            
-                            if (parseFloat(overallAverage) >= 8.0) {
-                                report += "🌟 Xuất sắc! Bạn có năng lực học tập rất tốt.\n";
-                                report += "• Tập trung vào các ngành có điểm chuẩn cao\n";
-                                report += "• Phát huy tối đa điểm mạnh\n";
-                                report += "• Tham gia các hoạt động ngoại khóa\n";
-                            } else if (parseFloat(overallAverage) >= 6.5) {
-                                report += "👍 Tốt! Bạn có nền tảng học tập khá vững.\n";
-                                report += "• Cải thiện các môn yếu\n";
-                                report += "• Tăng cường luyện tập\n";
-                                report += "• Chọn ngành phù hợp với năng lực\n";
-                            } else {
-                                report += "⚡ Cần nỗ lực! Hãy tập trung cải thiện.\n";
-                                report += "• Xác định nguyên nhân học yếu\n";
-                                report += "• Tìm kiếm sự hỗ trợ từ thầy cô\n";
-                                report += "• Xây dựng kế hoạch học tập cụ thể\n";
-                            }
-                        }
-                        
-                        report += "\n═══════════════════════════════════════\n";
-                        report += "📞 Liên hệ tư vấn thêm tại trung tâm hướng nghiệp\n";
-                        report += "🕒 " + new Date().toLocaleString('vi-VN');
-                        
-                        document.getElementById('results').textContent = report;
-                        this.showMessage('✅ Phân tích hoàn tất! Xem kết quả bên dưới.');
-                        
-                    } catch (error) {
-                        console.error('Lỗi phân tích:', error);
-                        this.showMessage(`❌ Lỗi phân tích: ${error.message}`, 'error');
-                    } finally {
-                        this.showLoading(false);
-                    }
-                }, 1000);
-            }
+        // Khởi tạo ứng dụng
+        function initApp() {
+            loadChats();
+            setupEventListeners();
+            setupTextareaAutoResize();
 
-            clearAllData() {
-                // Xóa tất cả input
-                document.querySelectorAll('.grade-input').forEach(input => {
-                    input.value = '';
-                    input.style.borderColor = '#e0e0e0';
-                });
-                
-                // Reset file input
-                document.getElementById('excelFile').value = '';
-                document.getElementById('fileStatus').textContent = 'Chưa chọn file nào';
-                document.getElementById('fileStatus').classList.remove('success');
-                
-                // Xóa kết quả
-                document.getElementById('results').textContent = `Chào mừng bạn đến với hệ thống tư vấn chọn tổ hợp học tập! 🎓
-
-📋 HƯỚNG DẪN SỬ DỤNG:
-1. Nhập điểm các môn từ lớp 6-9 vào bảng trên
-2. Hoặc tải file Excel có sẵn và nhấn "Đọc dữ liệu"
-3. Nhấn "Phân tích tư vấn" để xem kết quả
-
-💡 LƯU Ý:
-- Điểm từ 0-10, có thể để trống nếu không có
-- Hệ thống sẽ tự động tính toán và đưa ra gợi ý phù hợp
-- Biểu đồ trực quan sẽ hiển thị năng lực của bạn
-
-Hãy bắt đầu nhập dữ liệu để nhận được tư vấn cá nhân hóa! ✨`;
-                
-                // Destroy charts
-                if (this.barChart) {
-                    this.barChart.destroy();
-                    this.barChart = null;
-                }
-                if (this.radarChart) {
-                    this.radarChart.destroy();
-                    this.radarChart = null;
-                }
-                
-                // Ẩn messages
-                document.getElementById('errorMessage').style.display = 'none';
-                document.getElementById('successMessage').style.display = 'none';
-                
-                this.showMessage('🗑️ Đã xóa toàn bộ dữ liệu!');
+            if (chats.length === 0) {
+                createNewChat();
+            } else {
+                loadChat(chats[0].id);
             }
         }
 
-        // Khởi tạo ứng dụng khi trang web load
-        document.addEventListener('DOMContentLoaded', () => {
-            new GradeAdvisor();
-        });
+        function setupEventListeners() {
+            chatForm.addEventListener('submit', handleSubmit);
+            messageInput.addEventListener('input', () => {
+                autoResizeTextarea();
+            });
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (messageInput.value.trim() !== '') {
+                        chatForm.dispatchEvent(new Event('submit'));
+                    }
+                }
+            });
+            newChatBtn.addEventListener('click', createNewChat);
+            
+            // Thêm sự kiện cho các chip gợi ý
+            document.querySelectorAll('.suggestion-chip').forEach(chip => {
+                chip.addEventListener('click', function() {
+                    const question = this.getAttribute('data-question');
+                    messageInput.value = question;
+                    autoResizeTextarea();
+                    messageInput.focus();
+                });
+            });
+        }
+        
+        function setupTextareaAutoResize() {
+            messageInput.addEventListener('input', autoResizeTextarea);
+        }
+
+        function autoResizeTextarea() {
+            messageInput.style.height = 'auto';
+            const newHeight = Math.min(messageInput.scrollHeight, 150);
+            messageInput.style.height = `${newHeight}px`;
+        }
+
+        // Tạo prompt chuyên về đại học với dữ liệu chi tiết
+        function createUniversityPrompt(userMessage, recentMessages) {
+            const context = recentMessages.map(msg => 
+                `${msg.role === 'user' ? 'Học sinh' : 'Chuyên gia tư vấn'}: ${msg.content}`
+            ).join('\n');
+            
+            return `Bạn là chuyên gia tư vấn tuyển sinh đại học Việt Nam với thông tin cập nhật đến năm 2024. Hãy trả lời câu hỏi tập trung vào hệ thống giáo dục đại học Việt Nam.
+
+DỮ LIỆU THAM KHẢO CHI TIẾT:
+${JSON.stringify(UNIVERSITY_ADVICE_DATA, null, 2)}
+
+LỊCH SỬ HỘI THOẠI GẦN ĐÂY (15 tin nhắn gần nhất):
+${context}
+
+YÊU CẦU TRẢ LỜI:
+- Trả lời chi tiết, chính xác về đại học Việt Nam
+- Đưa ra các phương án lựa chọn cụ thể với thông tin chi tiết
+- Cung cấp thông tin điểm chuẩn, học phí, tổ hợp môn thi
+- So sánh các trường, ngành học khi cần thiết
+- Đề xuất hướng phát triển nghề nghiệp
+- Sử dụng bảng biểu để trình bày thông tin so sánh khi phù hợp
+- Không giới hạn độ dài câu trả lời
+
+Câu hỏi hiện tại: ${userMessage}`;
+        }
+
+        // Xử lý tin nhắn - CHUYÊN VỀ ĐẠI HỌC
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const userMessage = messageInput.value.trim();
+            if (!userMessage || isSending) return;
+
+            if (!currentChatId) {
+                createNewChat();
+                return;
+            }
+
+            const currentChat = chats.find(chat => chat.id === currentChatId);
+            if (!currentChat) return;
+
+            isSending = true;
+            addMessageToUI("user", userMessage);
+            
+            currentChat.messages.push({ 
+                role: "user", 
+                content: userMessage,
+                timestamp: new Date().toISOString()
+            });
+
+            saveChats();
+            updateChatTitle(currentChat);
+
+            messageInput.value = "";
+            autoResizeTextarea();
+            
+            typingIndicator.classList.remove("hidden");
+
+            try {
+                // Lấy 15 tin nhắn gần nhất để tăng khả năng ghi nhớ
+                const recentMessages = currentChat.messages.slice(-15);
+                
+                const chatSession = model.startChat({
+                    history: recentMessages.map(msg => ({
+                        role: msg.role === "user" ? "user" : "model",
+                        parts: [{ text: msg.content }]
+                    })),
+                    generationConfig: {
+                        maxOutputTokens: 8192, // Tăng giới hạn token để có câu trả lời dài hơn
+                        temperature: 0.4,
+                        topP: 0.7,
+                        topK: 40,
+                    }
+                });
+
+                // SỬ DỤNG PROMPT CHUYÊN VỀ ĐẠI HỌC VỚI DỮ LIỆU CHI TIẾT
+                const universityPrompt = createUniversityPrompt(userMessage, recentMessages);
+                
+                const result = await chatSession.sendMessageStream(universityPrompt);
+                let fullResponse = '';
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'bot-message fade-in';
+                messageDiv.innerHTML = '<div class="message-content"></div>';
+                chatMessages.appendChild(messageDiv);
+                
+                const contentDiv = messageDiv.querySelector('.message-content');
+                typingIndicator.classList.add("hidden");
+                
+                for await (const chunk of result.stream) {
+                    const chunkText = chunk.text();
+                    fullResponse += chunkText;
+                    contentDiv.innerHTML = formatResponse(fullResponse);
+                    scrollToBottom();
+                    await new Promise(resolve => setTimeout(resolve, 5)); // Giảm thời gian chờ để tăng tốc độ
+                }
+
+                currentChat.messages.push({ 
+                    role: "assistant", 
+                    content: fullResponse,
+                    timestamp: new Date().toISOString()
+                });
+                saveChats();
+                
+            } catch (error) {
+                console.error("Lỗi: ", error);
+                addMessageToUI("assistant", "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại.");
+            } finally {
+                isSending = false;
+                typingIndicator.classList.add("hidden");
+                scrollToBottom();
+            }
+        }
+
+        // Định dạng câu trả lời để hiển thị bảng và các thành phần đẹp hơn
+        function formatResponse(text) {
+            // Xử lý bảng biểu nếu có
+            let formattedText = text.replace(/\|(.+)\|/g, '<div class="overflow-x-auto"><table class="info-table"><tbody>$1</tbody></table></div>');
+            formattedText = formattedText.replace(/\n/g, '<br>');
+            
+            // Thêm hiệu ứng cho các mục quan trọng
+            formattedText = formattedText.replace(/(\*\*.+?\*\*)/g, '<strong>$1</strong>');
+            formattedText = formattedText.replace(/\*\*/g, '');
+            
+            return formattedText;
+        }
+
+        function addMessageToUI(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = role === 'user' ? 'user-message fade-in' : 'bot-message fade-in';
+            
+            if (role === 'assistant') {
+                messageDiv.innerHTML = `<div class="message-content">${formatResponse(content)}</div>`;
+            } else {
+                messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 50); // Giảm thời gian chờ để tăng tốc độ cuộn
+        }
+
+        function createNewChat() {
+            const newChat = {
+                id: Date.now().toString(),
+                title: 'Tư vấn đại học',
+                messages: [],
+                createdAt: new Date().toISOString()
+            };
+
+            chats.unshift(newChat);
+            saveChats();
+            loadChat(newChat.id);
+            messageInput.focus();
+        }
+
+        function loadChat(chatId) {
+            currentChatId = chatId;
+            chatMessages.innerHTML = '';
+
+            const currentChat = chats.find(chat => chat.id === chatId);
+            if (!currentChat || currentChat.messages.length === 0) {
+                // Hiển thị tin nhắn chào mừng nếu chat mới
+                const welcomeMsg = document.querySelector('.bot-message').cloneNode(true);
+                chatMessages.appendChild(welcomeMsg);
+                return;
+            }
+
+            currentChat.messages.forEach(message => {
+                addMessageToUI(message.role, message.content);
+            });
+            scrollToBottom();
+        }
+
+        function updateChatTitle(chat) {
+            if (!chat || !chat.messages || chat.messages.length === 0) return;
+
+            const firstUserMessage = chat.messages.find(msg => msg.role === "user");
+            if (firstUserMessage) {
+                chat.title = firstUserMessage.content.substring(0, 20) + (firstUserMessage.content.length > 20 ? "..." : "");
+            }
+            saveChats();
+        }
+
+        function saveChats() {
+            localStorage.setItem('university-chats', JSON.stringify(chats));
+        }
+
+        function loadChats() {
+            const storedChats = localStorage.getItem('university-chats');
+            if (storedChats) {
+                chats = JSON.parse(storedChats);
+            }
+        }
+
+        // Khởi chạy ứng dụng
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
+
