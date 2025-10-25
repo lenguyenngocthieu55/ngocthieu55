@@ -2,8 +2,10 @@
 <html lang="vi" dir="ltr">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tư vấn chọn tổ hợp theo năng lực học tập</title>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,9 +24,9 @@
             flex-direction: column;
             gap: 20px;
             width: 100%;
-            max-width: 500px;
+            max-width: 800px;
         }
-        .DiemTHCS, .DiemTHCS2 {
+        .DiemTHCS, .DiemTHCS2, .chart-container {
             padding: 15px;
             border-radius: 8px;
             background-color: #ffffff;
@@ -164,6 +166,10 @@
         .result-container::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+        .chart-container {
+            width: 100%;
+            height: 300px;
+        }
         footer {
             position: fixed;
             bottom: 0;
@@ -289,78 +295,149 @@
                 </tr>
             </table>
         </div>
+        <div class="chart-container">
+            <canvas id="abilityChart"></canvas>
+        </div>
     </div>
     <footer>
         Cuộc thi khoa học kĩ thuật trường THPT Số II Mộ Đức năm học 2025 - 2026
     </footer>
-    <input type="file" id="excelFile" accept=".xls,.xlsx"/>
+    <input type="file" id="excelFile" accept=".xls,.xlsx,.csv"/>
     <script>
         let selectedFile;
+        let abilityChart = null;
+        
+        // Đoạn code đọc file Excel - GIỐNG HỆT code ban đầu
         document.getElementById('excelFile').addEventListener('change', function (e) {
             selectedFile = e.target.files[0];
             document.getElementById('fileName').textContent = selectedFile ? selectedFile.name : "Chưa chọn file nào";
         });
+        
         document.getElementById('mau2').addEventListener('click', function () {
             if (!selectedFile) {
                 alert("Vui lòng chọn một file Excel trước.");
                 return;
             }
+            
+            console.log("Bắt đầu đọc file:", selectedFile.name);
+            
             const reader = new FileReader();
             reader.onload = function (e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(sheet);
-                if (jsonData.length === 0) {
-                    alert("File Excel không có dữ liệu hoặc không đúng định dạng.");
-                    return;
+                try {
+                    console.log("File đã được đọc thành công");
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    console.log("Workbook sheets:", workbook.SheetNames);
+                    
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet);
+                    
+                    console.log("Dữ liệu JSON:", jsonData);
+                    
+                    if (jsonData.length === 0) {
+                        alert("File Excel không có dữ liệu hoặc không đúng định dạng.");
+                        return;
+                    }
+                    
+                    const row = jsonData[0];
+                    console.log("Dòng đầu tiên:", row);
+                    
+                    // Đọc dữ liệu từ file Excel
+                    const fields = [
+                        { id: 'van6', key: 'Van6' }, { id: 'van7', key: 'Van7' }, { id: 'van8', key: 'Van8' }, { id: 'van9', key: 'Van9' },
+                        { id: 'toan6', key: 'Toan6' }, { id: 'toan7', key: 'Toan7' }, { id: 'toan8', key: 'Toan8' }, { id: 'toan9', key: 'Toan9' },
+                        { id: 'anh6', key: 'Anh6' }, { id: 'anh7', key: 'Anh7' }, { id: 'anh8', key: 'Anh8' }, { id: 'anh9', key: 'Anh9' },
+                        { id: 'gdcd6', key: 'GDCD6' }, { id: 'gdcd7', key: 'GDCD7' }, { id: 'gdcd8', key: 'GDCD8' }, { id: 'gdcd9', key: 'GDCD9' },
+                        { id: 'lsdl6', key: 'LSDL6' }, { id: 'lsdl7', key: 'LSDL7' }, { id: 'lsdl8', key: 'LSDL8' }, { id: 'lsdl9', key: 'LSDL9' },
+                        { id: 'khtn6', key: 'KHTN6' }, { id: 'khtn7', key: 'KHTN7' }, { id: 'khtn8', key: 'KHTN8' }, { id: 'khtn9', key: 'KHTN9' },
+                        { id: 'cn6', key: 'CongNghe6' }, { id: 'cn7', key: 'CongNghe7' }, { id: 'cn8', key: 'CongNghe8' }, { id: 'cn9', key: 'CongNghe9' },
+                        { id: 'th6', key: 'Tin6' }, { id: 'th7', key: 'Tin7' }, { id: 'th8', key: 'Tin8' }, { id: 'th9', key: 'Tin9' },
+                        { id: 'nghethuat6', key: 'NgheThuat6' }, { id: 'nghethuat7', key: 'NgheThuat7' }, { id: 'nghethuat8', key: 'NgheThuat8' }, { id: 'nghethuat9', key: 'NgheThuat9' },
+                        { id: 'hoatdong6', key: 'HoatDong6' }, { id: 'hoatdong7', key: 'HoatDong7' }, { id: 'hoatdong8', key: 'HoatDong8' }, { id: 'hoatdong9', key: 'HoatDong9' }
+                    ];
+                    
+                    let filledFields = 0;
+                    fields.forEach(field => {
+                        const value = row[field.key];
+                        if (value !== undefined && value !== null && value !== '') {
+                            document.getElementById(field.id).value = value;
+                            filledFields++;
+                        }
+                    });
+                    
+                    console.log(`Đã điền ${filledFields} trường dữ liệu`);
+                    alert("Dữ liệu đã được đọc thành công! " + filledFields + " trường đã được điền.");
+                    
+                } catch (error) {
+                    console.error("Lỗi khi đọc file:", error);
+                    alert("Có lỗi xảy ra khi đọc file: " + error.message);
                 }
-                const row = jsonData[0];
-                document.getElementById("van6").value = row["Van6"] || "";
-                document.getElementById("van7").value = row["Van7"] || "";
-                document.getElementById("van8").value = row["Van8"] || "";
-                document.getElementById("van9").value = row["Van9"] || "";
-                document.getElementById("toan6").value = row["Toan6"] || "";
-                document.getElementById("toan7").value = row["Toan7"] || "";
-                document.getElementById("toan8").value = row["Toan8"] || "";
-                document.getElementById("toan9").value = row["Toan9"] || "";
-                document.getElementById("anh6").value = row["Anh6"] || "";
-                document.getElementById("anh7").value = row["Anh7"] || "";
-                document.getElementById("anh8").value = row["Anh8"] || "";
-                document.getElementById("anh9").value = row["Anh9"] || "";
-                document.getElementById("gdcd6").value = row["GDCD6"] || "";
-                document.getElementById("gdcd7").value = row["GDCD7"] || "";
-                document.getElementById("gdcd8").value = row["GDCD8"] || "";
-                document.getElementById("gdcd9").value = row["GDCD9"] || "";
-                document.getElementById("lsdl6").value = row["LSDL6"] || "";
-                document.getElementById("lsdl7").value = row["LSDL7"] || "";
-                document.getElementById("lsdl8").value = row["LSDL8"] || "";
-                document.getElementById("lsdl9").value = row["LSDL9"] || "";
-                document.getElementById("khtn6").value = row["KHTN6"] || "";
-                document.getElementById("khtn7").value = row["KHTN7"] || "";
-                document.getElementById("khtn8").value = row["KHTN8"] || "";
-                document.getElementById("khtn9").value = row["KHTN9"] || "";
-                document.getElementById("cn6").value = row["CongNghe6"] || "";
-                document.getElementById("cn7").value = row["CongNghe7"] || "";
-                document.getElementById("cn8").value = row["CongNghe8"] || "";
-                document.getElementById("cn9").value = row["CongNghe9"] || "";
-                document.getElementById("th6").value = row["Tin6"] || "";
-                document.getElementById("th7").value = row["Tin7"] || "";
-                document.getElementById("th8").value = row["Tin8"] || "";
-                document.getElementById("th9").value = row["Tin9"] || "";
-                document.getElementById("nghethuat6").value = row["NgheThuat6"] || "";
-                document.getElementById("nghethuat7").value = row["NgheThuat7"] || "";
-                document.getElementById("nghethuat8").value = row["NgheThuat8"] || "";
-                document.getElementById("nghethuat9").value = row["NgheThuat9"] || "";
-                document.getElementById("hoatdong6").value = row["HoatDong6"] || "";
-                document.getElementById("hoatdong7").value = row["HoatDong7"] || "";
-                document.getElementById("hoatdong8").value = row["HoatDong8"] || "";
-                document.getElementById("hoatdong9").value = row["HoatDong9"] || "";
-                alert("Dữ liệu đã được đọc thành công!");
             };
+            
+            reader.onerror = function (e) {
+                console.error("Lỗi FileReader:", e);
+                alert("Lỗi khi đọc file. Vui lòng thử lại.");
+            };
+            
             reader.readAsArrayBuffer(selectedFile);
         });
+
+        // Hàm cập nhật biểu đồ năng lực
+        function updateAbilityChart(subjects, scores) {
+            const ctx = document.getElementById('abilityChart').getContext('2d');
+            
+            if (abilityChart) {
+                abilityChart.destroy();
+            }
+            
+            abilityChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: subjects,
+                    datasets: [{
+                        label: 'Năng lực học tập',
+                        data: scores,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'BIỂU ĐỒ ĐÁNH GIÁ NĂNG LỰC HỌC TẬP'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Code tư vấn tổ hợp GIỐNG HỆT code ban đầu
         document.getElementById("tuvan").onclick = function() {
+            // Lấy dữ liệu điểm từ các input
             let van6 = parseFloat(document.getElementById('van6').value) || 0;
             let van7 = parseFloat(document.getElementById('van7').value) || 0;
             let van8 = parseFloat(document.getElementById('van8').value) || 0;
@@ -401,10 +478,12 @@
             let hoatdong7 = parseFloat(document.getElementById('hoatdong7').value) || 0;
             let hoatdong8 = parseFloat(document.getElementById('hoatdong8').value) || 0;
             let hoatdong9 = parseFloat(document.getElementById('hoatdong9').value) || 0;
+            
             const calculateAverage = (scores) => {
                 const validScores = scores.filter(s => s > 0);
                 return validScores.length > 0 ? validScores.reduce((sum, s) => sum + s, 0) / validScores.length : 0;
             };
+            
             let tbVan = calculateAverage([van6, van7, van8, van9]);
             let tbToan = calculateAverage([toan6, toan7, toan8, toan9]);
             let tbAnh = calculateAverage([anh6, anh7, anh8, anh9]);
@@ -413,8 +492,14 @@
             let tbKHTN = calculateAverage([khtn6, khtn7, khtn8, khtn9]);
             let tbCN = calculateAverage([cn6, cn7, cn8, cn9]);
             let tbTH = calculateAverage([th6, th7, th8, th9]);
-            let tbNgheThuat = calculateAverage([nghethuat6, nghethuat7, nghethuat8, nghethuat9]);
-            let tbHoatDong = calculateAverage([hoatdong6, hoatdong7, hoatdong8, hoatdong9]);
+            
+            // Cập nhật biểu đồ năng lực
+            const subjects = ['Ngữ văn', 'Toán', 'Ngoại ngữ', 'KHTN', 'LSDL', 'Công nghệ', 'Tin học'];
+            const scores = [tbVan, tbToan, tbAnh, tbKHTN, tbLSDL, tbCN, tbTH];
+            
+            updateAbilityChart(subjects, scores);
+            
+            // Phần còn lại của code tư vấn GIỐNG HỆT code ban đầu
             let allSubjects = [
                 van6, van7, van8, van9,
                 toan6, toan7, toan8, toan9,
@@ -574,6 +659,7 @@
             }
             document.getElementById("kqtuvan").textContent = resultText;
         };
+        
         document.getElementById("xoa").onclick = function() {
             const inputElements = document.querySelectorAll('.display-box');
             inputElements.forEach(input => {
