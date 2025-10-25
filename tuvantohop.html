@@ -1,640 +1,588 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot AI Tư Vấn Đại Học</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#4f46e5',
-                        dark: {
-                            bg: '#0f172a',
-                            text: '#e2e8f0',
-                            sidebar: '#1e293b',
-                            hover: '#334155'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <meta charset="utf-8">
+    <title>Tư vấn chọn tổ hợp theo năng lực học tập</title>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
         body {
-            font-family: system-ui, sans-serif;
-            background-color: #0f172a;
-            color: #e2e8f0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+            padding-bottom: 60px;
         }
-        
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
         }
-        
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        .DiemTHCS, .DiemTHCS2 {
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            color: #333;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
         }
-        
-        .typing-dots::after {
-            content: '...';
-            animation: typing 1.5s infinite;
-        }
-        
-        @keyframes typing {
-            0% { content: '.'; }
-            33% { content: '..'; }
-            66% { content: '...'; }
-        }
-        
-        .user-message {
-            align-self: flex-end;
-            background-color: #4f46e5;
-            border-radius: 1rem;
-            max-width: 80%;
-            margin-left: auto;
-            padding: 0.75rem;
-        }
-        
-        .bot-message {
-            align-self: flex-start;
-            background-color: #1e293b;
-            border-radius: 1rem;
-            max-width: 80%;
-            margin-right: auto;
-            padding: 0.75rem;
-        }
-        
-        .typing-indicator {
-            align-self: flex-start;
-            background-color: #1e293b;
-            border-radius: 1rem;
-            max-width: 80%;
-            margin-right: auto;
-            padding: 0.75rem;
-        }
-        
-        .message-content {
-            word-wrap: break-word;
-            white-space: pre-wrap;
-        }
-
-        .university-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
-            padding: 1rem;
-            margin: 0.5rem 0;
-        }
-        
-        .suggestion-chip {
-            display: inline-block;
-            background-color: #334155;
-            border-radius: 20px;
-            padding: 0.5rem 1rem;
-            margin: 0.25rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .suggestion-chip:hover {
-            background-color: #4f46e5;
-        }
-        
-        .info-table {
+        .DiemTHCS table, .DiemTHCS2 table {
             width: 100%;
             border-collapse: collapse;
-            margin: 1rem 0;
         }
-        
-        .info-table th, .info-table td {
-            border: 1px solid #475569;
-            padding: 0.5rem;
+        .DiemTHCS th, .DiemTHCS td {
+            padding: 8px 5px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .display-box {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            color: #495057;
+            border-radius: 4px;
+            width: 100%;
+            height: 35px;
+            text-align: center;
+            box-sizing: border-box;
+            padding: 0 5px;
+        }
+        .display-title {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #87CEFA;
+            border: 1px solid #ced4da;
+            color: #333;
+            border-radius: 4px;
+            width: 100%;
+            height: 35px;
             text-align: left;
+            padding-left: 5px;
+            box-sizing: border-box;
+            font-weight: bold;
         }
-        
-        .info-table th {
-            background-color: #334155;
+        .display-title2 {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #87CEFA;
+            border: 1px solid #ced4da;
+            color: #333;
+            border-radius: 4px;
+            width: 100%;
+            height: 35px;
+            text-align: center;
+            box-sizing: border-box;
+            font-weight: bold;
         }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
+        .button {
+            font-family: sans-serif;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            width: 100%;
+            border-radius: 4px;
+            height: 40px;
+            outline: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .button:active {
+            background: #004085;
+            box-shadow: inset 0px 0px 5px rgba(0, 0, 0, 0.2);
+        }
+        #excelFile {
+            display: none;
+        }
+        label[for="excelFile"] {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+        label[for="excelFile"]:hover {
+            background-color: #5a6268;
+        }
+        #fileName {
+            font-style: italic;
+            color: #666;
+            margin-left: 5px;
+        }
+        .button-download {
+            background-color: #28a745;
+        }
+        .button-download:hover {
+            background-color: #218838;
+        }
+        .button-clear {
+            background-color: #dc3545;
+        }
+        .button-clear:hover {
+            background-color: #c82333;
+        }
+        .result-container {
+            width: 100%;
+            height: 150px;
+            overflow-y: auto;
+            border: 1px solid #dae0e5;
+            border-radius: 4px;
+            background-color: #e2e6ea;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .result-box {
+            width: 100%;
+            text-align: center;
+            color: #1a1a1a;
+            font-size: 16px;
+            font-weight: bold;
+            white-space: pre-line;
+            word-wrap: break-word;
+        }
+        .result-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .result-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .result-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .result-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            z-index: 100;
         }
     </style>
 </head>
-<body class="h-screen flex flex-col bg-dark-bg text-dark-text">
-
-    <div id="app" class="flex flex-1 overflow-hidden">
-        <!-- Sidebar đơn giản -->
-        <div id="sidebar" class="w-16 bg-dark-sidebar border-r border-gray-700 flex flex-col h-full">
-            <div class="p-3">
-                <button id="new-chat-btn" class="w-10 h-10 flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-md transition">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
-            </div>
+<body>
+    <div class="container">
+        <div class="DiemTHCS">
+            <table>
+                <tr>
+                    <td><input class="display-title" type="text" value="" disabled /></td>
+                    <td><input class="display-title2" type="text" value="Lớp 6" disabled /></td>
+                    <td><input class="display-title2" type="text" value="Lớp 7" disabled /></td>
+                    <td><input class="display-title2" type="text" value="Lớp 8" disabled /></td>
+                    <td><input class="display-title2" type="text" value="Lớp 9" disabled /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Ngữ văn" disabled /></td>
+                    <td><input class="display-box" type="text" id="van6" value="" /></td>
+                    <td><input class="display-box" type="text" id="van7" value="" /></td>
+                    <td><input class="display-box" type="text" id="van8" value="" /></td>
+                    <td><input class="display-box" type="text" id="van9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Toán" disabled /></td>
+                    <td><input class="display-box" type="text" id="toan6" value="" /></td>
+                    <td><input class="display-box" type="text" id="toan7" value="" /></td>
+                    <td><input class="display-box" type="text" id="toan8" value="" /></td>
+                    <td><input class="display-box" type="text" id="toan9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Ngoại ngữ 1" disabled /></td>
+                    <td><input class="display-box" type="text" id="anh6" value="" /></td>
+                    <td><input class="display-box" type="text" id="anh7" value="" /></td>
+                    <td><input class="display-box" type="text" id="anh8" value="" /></td>
+                    <td><input class="display-box" type="text" id="anh9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Giáo dục công dân" disabled /></td>
+                    <td><input class="display-box" type="text" id="gdcd6" value="" /></td>
+                    <td><input class="display-box" type="text" id="gdcd7" value="" /></td>
+                    <td><input class="display-box" type="text" id="gdcd8" value="" /></td>
+                    <td><input class="display-box" type="text" id="gdcd9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Lịch sử - Địa lý" disabled /></td>
+                    <td><input class="display-box" type="text" id="lsdl6" value="" /></td>
+                    <td><input class="display-box" type="text" id="lsdl7" value="" /></td>
+                    <td><input class="display-box" type="text" id="lsdl8" value="" /></td>
+                    <td><input class="display-box" type="text" id="lsdl9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Khoa học tự nhiên" disabled /></td>
+                    <td><input class="display-box" type="text" id="khtn6" value="" /></td>
+                    <td><input class="display-box" type="text" id="khtn7" value="" /></td>
+                    <td><input class="display-box" type="text" id="khtn8" value="" /></td>
+                    <td><input class="display-box" type="text" id="khtn9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Công nghệ" disabled /></td>
+                    <td><input class="display-box" type="text" id="cn6" value="" /></td>
+                    <td><input class="display-box" type="text" id="cn7" value="" /></td>
+                    <td><input class="display-box" type="text" id="cn8" value="" /></td>
+                    <td><input class="display-box" type="text" id="cn9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Tin học" disabled /></td>
+                    <td><input class="display-box" type="text" id="th6" value="" /></td>
+                    <td><input class="display-box" type="text" id="th7" value="" /></td>
+                    <td><input class="display-box" type="text" id="th8" value="" /></td>
+                    <td><input class="display-box" type="text" id="th9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Nghệ thuật" disabled /></td>
+                    <td><input class="display-box" type="text" id="nghethuat6" value="" /></td>
+                    <td><input class="display-box" type="text" id="nghethuat7" value="" /></td>
+                    <td><input class="display-box" type="text" id="nghethuat8" value="" /></td>
+                    <td><input class="display-box" type="text" id="nghethuat9" value="" /></td>
+                </tr>
+                <tr>
+                    <td><input class="display-title" type="text" value="Hoạt động trải nghiệm" disabled /></td>
+                    <td><input class="display-box" type="text" id="hoatdong6" value="" /></td>
+                    <td><input class="display-box" type="text" id="hoatdong7" value="" /></td>
+                    <td><input class="display-box" type="text" id="hoatdong8" value="" /></td>
+                    <td><input class="display-box" type="text" id="hoatdong9" value="" /></td>
+                </tr>
+            </table>
         </div>
-        
-        <!-- Main Chat Area -->
-        <div class="flex-1 flex flex-col h-full overflow-hidden">
-            <header class="p-4 border-b border-gray-700 bg-dark-bg">
-                <h1 class="text-xl font-semibold text-left">Chatbot AI Tư Vấn Đại Học</h1>
-            </header>
-            
-            <div id="chat-container" class="flex-1 overflow-y-auto hide-scrollbar p-4 bg-gray-900 flex flex-col gap-3">
-                <div id="chat-messages" class="flex flex-col gap-3 mx-auto max-w-3xl w-full">
-                    <!-- Welcome message chuyên về đại học -->
-                    <div class="bot-message fade-in">
-                        <div class="message-content">
-                            <h3 class="font-semibold mb-2">🎓 Chào mừng đến với Chatbot Tư Vấn Đại Học!</h3>
-                            <p>Tôi có thể giúp bạn:</p>
-                            <ul class="list-disc pl-5 mt-2 space-y-1">
-                                <li>Tư vấn chọn ngành, chọn trường Đại học</li>
-                                <li>Thông tin tổ hợp môn thi, điểm chuẩn</li>
-                                <li>Định hướng nghề nghiệp sau đại học</li>
-                                <li>Tư vấn tuyển sinh, hồ sơ đăng ký</li>
-                                <li>Thông tin học phí và chính sách học bổng</li>
-                            </ul>
-                            <p class="mt-3">Hãy hỏi tôi về bất kỳ thắc mắc nào liên quan đến đại học!</p>
-                            
-                            <div class="mt-4">
-                                <p class="mb-2">Một số câu hỏi gợi ý:</p>
-                                <div class="flex flex-wrap">
-                                    <span class="suggestion-chip" data-question="Điểm chuẩn Đại học Bách Khoa Hà Nội năm 2023?">Điểm chuẩn Bách Khoa Hà Nội</span>
-                                    <span class="suggestion-chip" data-question="Học phí Đại học Kinh tế Quốc dân?">Học phí NEU</span>
-                                    <span class="suggestion-chip" data-question="Ngành Công nghệ thông tin thi khối nào?">Ngành CNTT thi khối gì?</span>
-                                    <span class="suggestion-chip" data-question="Điểm chuẩn Đại học Y Hà Nội?">Điểm chuẩn Y Hà Nội</span>
-                                </div>
-                            </div>
+        <div class="DiemTHCS2">
+            <table>
+                <tr>
+                    <td colspan="2">
+                        <label for="excelFile">📁 File điểm</label>
+                        <span id="fileName">Chưa chọn file nào</span>
+                    </td>
+                    <td><input class="button" type="button" id="mau2" value="Đọc dữ liệu từ file"/></td>
+                </tr>
+                <tr>
+                    <td><input class="button" type="button" id="tuvan" value="Tư vấn chọn tổ hợp"/></td>
+                    <td><input class="button button-clear" type="button" id="xoa" value="Xóa"/></td>
+                    <td>
+                        <a href="https://docs.google.com/spreadsheets/d/12LE1T-fZDEmBTrQCzmQNjRHgfTy9X5Cy/edit?usp=sharing&ouid=113662691499014817150&rtpof=true&sd=true" download>
+                            <input class="button button-download" type="button" value="Download file mẫu"/>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <div class="result-container">
+                            <div class="result-box" id="kqtuvan"></div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="typing-indicator" class="hidden max-w-3xl mx-auto p-4 mb-4">
-                <span class="typing-dots">AI đang phân tích câu hỏi về đại học</span>
-            </div>
-
-            <div class="p-4 border-t border-gray-700 bg-dark-bg">
-                <div class="max-w-3xl mx-auto">
-                    <form id="chat-form" class="relative">
-                        <textarea 
-                            id="message-input" 
-                            class="w-full p-4 rounded-lg border border-gray-600 bg-dark-hover resize-none focus:outline-none focus:ring-2 focus:ring-primary text-white"
-                            placeholder="Nhập câu hỏi về đại học, ngành học, tuyển sinh..."
-                            rows="1"
-                        ></textarea>
-                        <button type="submit" class="absolute right-3 bottom-3 bg-primary hover:bg-primary/90 text-white p-2 rounded-md transition">
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
-
-    <script type="importmap">
-        {
-            "imports": {
-                "@google/generative-ai": "https://esm.run/@google/generative-ai"
-            }
-        }
-    </script>
-    <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
-
-        const API_KEY = "AIzaSyCdMh5gnSHnwW0S4OpFt8Y8EkpyH7tLLas";
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-01-21" });
-
-        // ==================== DỮ LIỆU TƯ VẤN ĐẠI HỌC CHI TIẾT ====================
-        const UNIVERSITY_ADVICE_DATA = {
-            subjectCombinations: {
-                "A00": ["Toán", "Vật lý", "Hóa học"],
-                "A01": ["Toán", "Vật lý", "Tiếng Anh"], 
-                "B00": ["Toán", "Hóa học", "Sinh học"],
-                "C00": ["Ngữ văn", "Lịch sử", "Địa lý"],
-                "D01": ["Toán", "Ngữ văn", "Tiếng Anh"],
-                "D07": ["Toán", "Hóa học", "Tiếng Anh"],
-                "D90": ["Toán", "Khoa học tự nhiên", "Tiếng Anh"]
-            },
-
-            universities: {
-                "Đại học Bách Khoa Hà Nội": {
-                    location: "Hà Nội",
-                    type: "Công lập",
-                    popularMajors: ["Công nghệ thông tin", "Kỹ thuật điện", "Cơ khí", "Xây dựng"],
-                    admissionInfo: {
-                        "Công nghệ thông tin": {combinations: ["A00", "A01"], benchmark: 27.5, tuition: "18-22 triệu/năm"},
-                        "Kỹ thuật điện": {combinations: ["A00", "A01"], benchmark: 25.5, tuition: "18-22 triệu/năm"},
-                        "Cơ khí": {combinations: ["A00", "A01"], benchmark: 24.5, tuition: "18-22 triệu/năm"}
-                    },
-                    scholarships: "Nhiều học bổng từ 30-100% học phí"
-                },
-                "Đại học Kinh tế Quốc dân": {
-                    location: "Hà Nội",
-                    type: "Công lập",
-                    popularMajors: ["Quản trị kinh doanh", "Tài chính ngân hàng", "Kế toán"],
-                    admissionInfo: {
-                        "Quản trị kinh doanh": {combinations: ["A00", "A01", "D01"], benchmark: 28.25, tuition: "15-20 triệu/năm"},
-                        "Tài chính ngân hàng": {combinations: ["A00", "A01", "D01"], benchmark: 27.75, tuition: "15-20 triệu/năm"},
-                        "Kế toán": {combinations: ["A00", "A01", "D01"], benchmark: 27.5, tuition: "15-20 triệu/năm"}
-                    },
-                    scholarships: "Học bổng tài năng, học bổng khuyến khích học tập"
-                },
-                "Đại học Y Hà Nội": {
-                    location: "Hà Nội",
-                    type: "Công lập",
-                    popularMajors: ["Y đa khoa", "Dược học", "Răng hàm mặt"],
-                    admissionInfo: {
-                        "Y đa khoa": {combinations: ["B00", "A00"], benchmark: 28.75, tuition: "25-35 triệu/năm"},
-                        "Dược học": {combinations: ["B00", "A00"], benchmark: 28.25, tuition: "25-35 triệu/năm"},
-                        "Răng hàm mặt": {combinations: ["B00", "A00"], benchmark: 28.5, tuition: "25-35 triệu/năm"}
-                    },
-                    scholarships: "Học bổng cho sinh viên xuất sắc, sinh viên khó khăn"
-                },
-                "Đại học Ngoại thương": {
-                    location: "Hà Nội, TP.HCM",
-                    type: "Công lập",
-                    popularMajors: ["Kinh tế quốc tế", "Quản trị kinh doanh", "Marketing"],
-                    admissionInfo: {
-                        "Kinh tế quốc tế": {combinations: ["A00", "A01", "D01", "D07"], benchmark: 28.5, tuition: "18-25 triệu/năm"},
-                        "Quản trị kinh doanh": {combinations: ["A00", "A01", "D01", "D07"], benchmark: 28.25, tuition: "18-25 triệu/năm"},
-                        "Marketing": {combinations: ["A00", "A01", "D01", "D07"], benchmark: 27.75, tuition: "18-25 triệu/năm"}
-                    },
-                    scholarships: "Nhiều học bổng từ doanh nghiệp và quỹ học bổng"
-                },
-                "Đại học Bách Khoa TP.HCM": {
-                    location: "TP.HCM",
-                    type: "Công lập",
-                    popularMajors: ["Công nghệ thông tin", "Kỹ thuật điện - điện tử", "Cơ khí"],
-                    admissionInfo: {
-                        "Công nghệ thông tin": {combinations: ["A00", "A01"], benchmark: 27.25, tuition: "20-25 triệu/năm"},
-                        "Kỹ thuật điện - điện tử": {combinations: ["A00", "A01"], benchmark: 25.75, tuition: "20-25 triệu/năm"},
-                        "Cơ khí": {combinations: ["A00", "A01"], benchmark: 25.25, tuition: "20-25 triệu/năm"}
-                    },
-                    scholarships: "Học bổng toàn phần, bán phần từ nhiều nguồn"
-                },
-                "Đại học Khoa học Xã hội và Nhân văn": {
-                    location: "Hà Nội, TP.HCM",
-                    type: "Công lập",
-                    popularMajors: ["Báo chí", "Quan hệ quốc tế", "Ngôn ngữ Anh"],
-                    admissionInfo: {
-                        "Báo chí": {combinations: ["C00", "D01", "D14"], benchmark: 26.5, tuition: "10-15 triệu/năm"},
-                        "Quan hệ quốc tế": {combinations: ["C00", "D01", "D14"], benchmark: 26.25, tuition: "10-15 triệu/năm"},
-                        "Ngôn ngữ Anh": {combinations: ["D01", "D14", "D15"], benchmark: 25.75, tuition: "10-15 triệu/năm"}
-                    },
-                    scholarships: "Học bổng theo kết quả học tập"
-                },
-                "Đại học Cần Thơ": {
-                    location: "Cần Thơ",
-                    type: "Công lập",
-                    popularMajors: ["Nông nghiệp", "Công nghệ thực phẩm", "Thủy sản"],
-                    admissionInfo: {
-                        "Nông nghiệp": {combinations: ["A00", "B00", "D07"], benchmark: 22.5, tuition: "8-12 triệu/năm"},
-                        "Công nghệ thực phẩm": {combinations: ["A00", "B00", "D07"], benchmark: 23.5, tuition: "8-12 triệu/năm"},
-                        "Thủy sản": {combinations: ["A00", "B00", "D07"], benchmark: 22.0, tuition: "8-12 triệu/năm"}
-                    },
-                    scholarships: "Học bổng cho sinh viên vùng ĐBSCL"
-                },
-                "Đại học Đà Nẵng": {
-                    location: "Đà Nẵng",
-                    type: "Công lập",
-                    popularMajors: ["Công nghệ thông tin", "Du lịch", "Kỹ thuật xây dựng"],
-                    admissionInfo: {
-                        "Công nghệ thông tin": {combinations: ["A00", "A01"], benchmark: 25.5, tuition: "12-16 triệu/năm"},
-                        "Du lịch": {combinations: ["A00", "A01", "D01", "C00"], benchmark: 24.0, tuition: "10-14 triệu/năm"},
-                        "Kỹ thuật xây dựng": {combinations: ["A00", "A01"], benchmark: 24.5, tuition: "12-16 triệu/năm"}
-                    },
-                    scholarships: "Học bổng khuyến khích học tập, học bổng doanh nghiệp"
-                },
-                "Đại học FPT": {
-                    location: "Hà Nội, TP.HCM, Đà Nẵng, Cần Thơ",
-                    type: "Tư thục",
-                    popularMajors: ["Công nghệ thông tin", "Quản trị kinh doanh", "Ngôn ngữ Anh"],
-                    admissionInfo: {
-                        "Công nghệ thông tin": {combinations: ["A00", "A01", "D01", "D90"], benchmark: "Xét học bạ/ĐGNL", tuition: "25-30 triệu/kỳ"},
-                        "Quản trị kinh doanh": {combinations: ["A00", "A01", "D01", "D90"], benchmark: "Xét học bạ/ĐGNL", tuition: "22-28 triệu/kỳ"},
-                        "Ngôn ngữ Anh": {combinations: ["A00", "A01", "D01", "D90"], benchmark: "Xét học bạ/ĐGNL", tuition: "20-25 triệu/kỳ"}
-                    },
-                    scholarships: "Học bổng tài năng lên đến 100% học phí"
-                },
-                "Đại học Tôn Đức Thắng": {
-                    location: "TP.HCM",
-                    type: "Công lập",
-                    popularMajors: ["Công nghệ thông tin", "Quản trị kinh doanh", "Kỹ thuật điện"],
-                    admissionInfo: {
-                        "Công nghệ thông tin": {combinations: ["A00", "A01"], benchmark: 26.0, tuition: "15-20 triệu/năm"},
-                        "Quản trị kinh doanh": {combinations: ["A00", "A01", "D01"], benchmark: 25.5, tuition: "15-20 triệu/năm"},
-                        "Kỹ thuật điện": {combinations: ["A00", "A01"], benchmark: 24.5, tuition: "15-20 triệu/năm"}
-                    },
-                    scholarships: "Nhiều học bổng cho sinh viên xuất sắc"
-                }
-            },
-
-            popularMajors: {
-                "Công nghệ thông tin": {
-                    combinations: ["A00", "A01", "D01"],
-                    universities: ["Bách Khoa Hà Nội", "Bách Khoa TP.HCM", "FPT", "Tôn Đức Thắng"],
-                    career: "Lập trình viên, Kỹ sư phần mềm, Quản trị hệ thống",
-                    salary: "10-30 triệu/tháng (tùy kinh nghiệm)"
-                },
-                "Y khoa": {
-                    combinations: ["B00", "A00"],
-                    universities: ["Y Hà Nội", "Y Dược TP.HCM"],
-                    career: "Bác sĩ đa khoa, Bác sĩ chuyên khoa",
-                    salary: "15-50 triệu/tháng (tùy chuyên khoa và kinh nghiệm)"
-                },
-                "Kinh tế": {
-                    combinations: ["A00", "A01", "D01"],
-                    universities: ["Kinh tế Quốc dân", "Ngoại thương", "Kinh tế TP.HCM"],
-                    career: "Quản trị kinh doanh, Tài chính ngân hàng, Kế toán",
-                    salary: "8-25 triệu/tháng (tùy vị trí và kinh nghiệm)"
-                },
-                "Luật": {
-                    combinations: ["C00", "A00", "D01"],
-                    universities: ["Luật Hà Nội", "Kinh tế Luật TP.HCM"],
-                    career: "Luật sư, Cố vấn pháp lý, Kiểm soát viên",
-                    salary: "10-40 triệu/tháng (tùy kinh nghiệm và lĩnh vực)"
-                },
-                "Kiến trúc": {
-                    combinations: ["V00", "V01", "V02"],
-                    universities: ["Kiến trúc Hà Nội", "Kiến trúc TP.HCM"],
-                    career: "Kiến trúc sư, Thiết kế nội thất, Quy hoạch đô thị",
-                    salary: "10-30 triệu/tháng (tùy kinh nghiệm)"
-                }
-            }
-        };
-
-        // Biến toàn cục
-        const chatContainer = document.getElementById('chat-container');
-        const chatMessages = document.getElementById('chat-messages');
-        const chatForm = document.getElementById('chat-form');
-        const messageInput = document.getElementById('message-input');
-        const newChatBtn = document.getElementById('new-chat-btn');
-        const typingIndicator = document.getElementById('typing-indicator');
-
-        let chats = [];
-        let currentChatId = null;
-        let isSending = false;
-
-        // Khởi tạo ứng dụng
-        function initApp() {
-            loadChats();
-            setupEventListeners();
-            setupTextareaAutoResize();
-
-            if (chats.length === 0) {
-                createNewChat();
-            } else {
-                loadChat(chats[0].id);
-            }
-        }
-
-        function setupEventListeners() {
-            chatForm.addEventListener('submit', handleSubmit);
-            messageInput.addEventListener('input', () => {
-                autoResizeTextarea();
-            });
-            messageInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    if (messageInput.value.trim() !== '') {
-                        chatForm.dispatchEvent(new Event('submit'));
-                    }
-                }
-            });
-            newChatBtn.addEventListener('click', createNewChat);
-            
-            // Thêm sự kiện cho các chip gợi ý
-            document.querySelectorAll('.suggestion-chip').forEach(chip => {
-                chip.addEventListener('click', function() {
-                    const question = this.getAttribute('data-question');
-                    messageInput.value = question;
-                    autoResizeTextarea();
-                    messageInput.focus();
-                });
-            });
-        }
-        
-        function setupTextareaAutoResize() {
-            messageInput.addEventListener('input', autoResizeTextarea);
-        }
-
-        function autoResizeTextarea() {
-            messageInput.style.height = 'auto';
-            const newHeight = Math.min(messageInput.scrollHeight, 150);
-            messageInput.style.height = `${newHeight}px`;
-        }
-
-        // Tạo prompt chuyên về đại học với dữ liệu chi tiết
-        function createUniversityPrompt(userMessage, recentMessages) {
-            const context = recentMessages.map(msg => 
-                `${msg.role === 'user' ? 'Học sinh' : 'Chuyên gia tư vấn'}: ${msg.content}`
-            ).join('\n');
-            
-            return `Bạn là chuyên gia tư vấn tuyển sinh đại học Việt Nam với thông tin cập nhật đến năm 2024. Hãy trả lời câu hỏi tập trung vào hệ thống giáo dục đại học Việt Nam.
-
-DỮ LIỆU THAM KHẢO CHI TIẾT:
-${JSON.stringify(UNIVERSITY_ADVICE_DATA, null, 2)}
-
-LỊCH SỬ HỘI THOẠI GẦN ĐÂY (15 tin nhắn gần nhất):
-${context}
-
-YÊU CẦU TRẢ LỜI:
-- Trả lời chi tiết, chính xác về đại học Việt Nam
-- Đưa ra các phương án lựa chọn cụ thể với thông tin chi tiết
-- Cung cấp thông tin điểm chuẩn, học phí, tổ hợp môn thi
-- So sánh các trường, ngành học khi cần thiết
-- Đề xuất hướng phát triển nghề nghiệp
-- Sử dụng bảng biểu để trình bày thông tin so sánh khi phù hợp
-- Không giới hạn độ dài câu trả lời
-
-Câu hỏi hiện tại: ${userMessage}`;
-        }
-
-        // Xử lý tin nhắn - CHUYÊN VỀ ĐẠI HỌC
-        async function handleSubmit(e) {
-            e.preventDefault();
-            const userMessage = messageInput.value.trim();
-            if (!userMessage || isSending) return;
-
-            if (!currentChatId) {
-                createNewChat();
+    <footer>
+        Cuộc thi khoa học kĩ thuật trường THPT Số II Mộ Đức năm học 2025 - 2026
+    </footer>
+    <input type="file" id="excelFile" accept=".xls,.xlsx"/>
+    <script>
+        let selectedFile;
+        document.getElementById('excelFile').addEventListener('change', function (e) {
+            selectedFile = e.target.files[0];
+            document.getElementById('fileName').textContent = selectedFile ? selectedFile.name : "Chưa chọn file nào";
+        });
+        document.getElementById('mau2').addEventListener('click', function () {
+            if (!selectedFile) {
+                alert("Vui lòng chọn một file Excel trước.");
                 return;
             }
-
-            const currentChat = chats.find(chat => chat.id === currentChatId);
-            if (!currentChat) return;
-
-            isSending = true;
-            addMessageToUI("user", userMessage);
-            
-            currentChat.messages.push({ 
-                role: "user", 
-                content: userMessage,
-                timestamp: new Date().toISOString()
-            });
-
-            saveChats();
-            updateChatTitle(currentChat);
-
-            messageInput.value = "";
-            autoResizeTextarea();
-            
-            typingIndicator.classList.remove("hidden");
-
-            try {
-                // Lấy 15 tin nhắn gần nhất để tăng khả năng ghi nhớ
-                const recentMessages = currentChat.messages.slice(-15);
-                
-                const chatSession = model.startChat({
-                    history: recentMessages.map(msg => ({
-                        role: msg.role === "user" ? "user" : "model",
-                        parts: [{ text: msg.content }]
-                    })),
-                    generationConfig: {
-                        maxOutputTokens: 8192, // Tăng giới hạn token để có câu trả lời dài hơn
-                        temperature: 0.4,
-                        topP: 0.7,
-                        topK: 40,
-                    }
-                });
-
-                // SỬ DỤNG PROMPT CHUYÊN VỀ ĐẠI HỌC VỚI DỮ LIỆU CHI TIẾT
-                const universityPrompt = createUniversityPrompt(userMessage, recentMessages);
-                
-                const result = await chatSession.sendMessageStream(universityPrompt);
-                let fullResponse = '';
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'bot-message fade-in';
-                messageDiv.innerHTML = '<div class="message-content"></div>';
-                chatMessages.appendChild(messageDiv);
-                
-                const contentDiv = messageDiv.querySelector('.message-content');
-                typingIndicator.classList.add("hidden");
-                
-                for await (const chunk of result.stream) {
-                    const chunkText = chunk.text();
-                    fullResponse += chunkText;
-                    contentDiv.innerHTML = formatResponse(fullResponse);
-                    scrollToBottom();
-                    await new Promise(resolve => setTimeout(resolve, 5)); // Giảm thời gian chờ để tăng tốc độ
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(sheet);
+                if (jsonData.length === 0) {
+                    alert("File Excel không có dữ liệu hoặc không đúng định dạng.");
+                    return;
                 }
-
-                currentChat.messages.push({ 
-                    role: "assistant", 
-                    content: fullResponse,
-                    timestamp: new Date().toISOString()
-                });
-                saveChats();
-                
-            } catch (error) {
-                console.error("Lỗi: ", error);
-                addMessageToUI("assistant", "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại.");
-            } finally {
-                isSending = false;
-                typingIndicator.classList.add("hidden");
-                scrollToBottom();
-            }
-        }
-
-        // Định dạng câu trả lời để hiển thị bảng và các thành phần đẹp hơn
-        function formatResponse(text) {
-            // Xử lý bảng biểu nếu có
-            let formattedText = text.replace(/\|(.+)\|/g, '<div class="overflow-x-auto"><table class="info-table"><tbody>$1</tbody></table></div>');
-            formattedText = formattedText.replace(/\n/g, '<br>');
-            
-            // Thêm hiệu ứng cho các mục quan trọng
-            formattedText = formattedText.replace(/(\*\*.+?\*\*)/g, '<strong>$1</strong>');
-            formattedText = formattedText.replace(/\*\*/g, '');
-            
-            return formattedText;
-        }
-
-        function addMessageToUI(role, content) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = role === 'user' ? 'user-message fade-in' : 'bot-message fade-in';
-            
-            if (role === 'assistant') {
-                messageDiv.innerHTML = `<div class="message-content">${formatResponse(content)}</div>`;
-            } else {
-                messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
-            }
-            
-            chatMessages.appendChild(messageDiv);
-            scrollToBottom();
-        }
-
-        function scrollToBottom() {
-            setTimeout(() => {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }, 50); // Giảm thời gian chờ để tăng tốc độ cuộn
-        }
-
-        function createNewChat() {
-            const newChat = {
-                id: Date.now().toString(),
-                title: 'Tư vấn đại học',
-                messages: [],
-                createdAt: new Date().toISOString()
+                const row = jsonData[0];
+                document.getElementById("van6").value = row["Van6"] || "";
+                document.getElementById("van7").value = row["Van7"] || "";
+                document.getElementById("van8").value = row["Van8"] || "";
+                document.getElementById("van9").value = row["Van9"] || "";
+                document.getElementById("toan6").value = row["Toan6"] || "";
+                document.getElementById("toan7").value = row["Toan7"] || "";
+                document.getElementById("toan8").value = row["Toan8"] || "";
+                document.getElementById("toan9").value = row["Toan9"] || "";
+                document.getElementById("anh6").value = row["Anh6"] || "";
+                document.getElementById("anh7").value = row["Anh7"] || "";
+                document.getElementById("anh8").value = row["Anh8"] || "";
+                document.getElementById("anh9").value = row["Anh9"] || "";
+                document.getElementById("gdcd6").value = row["GDCD6"] || "";
+                document.getElementById("gdcd7").value = row["GDCD7"] || "";
+                document.getElementById("gdcd8").value = row["GDCD8"] || "";
+                document.getElementById("gdcd9").value = row["GDCD9"] || "";
+                document.getElementById("lsdl6").value = row["LSDL6"] || "";
+                document.getElementById("lsdl7").value = row["LSDL7"] || "";
+                document.getElementById("lsdl8").value = row["LSDL8"] || "";
+                document.getElementById("lsdl9").value = row["LSDL9"] || "";
+                document.getElementById("khtn6").value = row["KHTN6"] || "";
+                document.getElementById("khtn7").value = row["KHTN7"] || "";
+                document.getElementById("khtn8").value = row["KHTN8"] || "";
+                document.getElementById("khtn9").value = row["KHTN9"] || "";
+                document.getElementById("cn6").value = row["CongNghe6"] || "";
+                document.getElementById("cn7").value = row["CongNghe7"] || "";
+                document.getElementById("cn8").value = row["CongNghe8"] || "";
+                document.getElementById("cn9").value = row["CongNghe9"] || "";
+                document.getElementById("th6").value = row["Tin6"] || "";
+                document.getElementById("th7").value = row["Tin7"] || "";
+                document.getElementById("th8").value = row["Tin8"] || "";
+                document.getElementById("th9").value = row["Tin9"] || "";
+                document.getElementById("nghethuat6").value = row["NgheThuat6"] || "";
+                document.getElementById("nghethuat7").value = row["NgheThuat7"] || "";
+                document.getElementById("nghethuat8").value = row["NgheThuat8"] || "";
+                document.getElementById("nghethuat9").value = row["NgheThuat9"] || "";
+                document.getElementById("hoatdong6").value = row["HoatDong6"] || "";
+                document.getElementById("hoatdong7").value = row["HoatDong7"] || "";
+                document.getElementById("hoatdong8").value = row["HoatDong8"] || "";
+                document.getElementById("hoatdong9").value = row["HoatDong9"] || "";
+                alert("Dữ liệu đã được đọc thành công!");
             };
-
-            chats.unshift(newChat);
-            saveChats();
-            loadChat(newChat.id);
-            messageInput.focus();
-        }
-
-        function loadChat(chatId) {
-            currentChatId = chatId;
-            chatMessages.innerHTML = '';
-
-            const currentChat = chats.find(chat => chat.id === chatId);
-            if (!currentChat || currentChat.messages.length === 0) {
-                // Hiển thị tin nhắn chào mừng nếu chat mới
-                const welcomeMsg = document.querySelector('.bot-message').cloneNode(true);
-                chatMessages.appendChild(welcomeMsg);
+            reader.readAsArrayBuffer(selectedFile);
+        });
+        document.getElementById("tuvan").onclick = function() {
+            let van6 = parseFloat(document.getElementById('van6').value) || 0;
+            let van7 = parseFloat(document.getElementById('van7').value) || 0;
+            let van8 = parseFloat(document.getElementById('van8').value) || 0;
+            let van9 = parseFloat(document.getElementById('van9').value) || 0;
+            let toan6 = parseFloat(document.getElementById('toan6').value) || 0;
+            let toan7 = parseFloat(document.getElementById('toan7').value) || 0;
+            let toan8 = parseFloat(document.getElementById('toan8').value) || 0;
+            let toan9 = parseFloat(document.getElementById('toan9').value) || 0;
+            let anh6 = parseFloat(document.getElementById('anh6').value) || 0;
+            let anh7 = parseFloat(document.getElementById('anh7').value) || 0;
+            let anh8 = parseFloat(document.getElementById('anh8').value) || 0;
+            let anh9 = parseFloat(document.getElementById('anh9').value) || 0;
+            let gdcd6 = parseFloat(document.getElementById('gdcd6').value) || 0;
+            let gdcd7 = parseFloat(document.getElementById('gdcd7').value) || 0;
+            let gdcd8 = parseFloat(document.getElementById('gdcd8').value) || 0;
+            let gdcd9 = parseFloat(document.getElementById('gdcd9').value) || 0;
+            let lsdl6 = parseFloat(document.getElementById('lsdl6').value) || 0;
+            let lsdl7 = parseFloat(document.getElementById('lsdl7').value) || 0;
+            let lsdl8 = parseFloat(document.getElementById('lsdl8').value) || 0;
+            let lsdl9 = parseFloat(document.getElementById('lsdl9').value) || 0;
+            let khtn6 = parseFloat(document.getElementById('khtn6').value) || 0;
+            let khtn7 = parseFloat(document.getElementById('khtn7').value) || 0;
+            let khtn8 = parseFloat(document.getElementById('khtn8').value) || 0;
+            let khtn9 = parseFloat(document.getElementById('khtn9').value) || 0;
+            let cn6 = parseFloat(document.getElementById('cn6').value) || 0;
+            let cn7 = parseFloat(document.getElementById('cn7').value) || 0;
+            let cn8 = parseFloat(document.getElementById('cn8').value) || 0;
+            let cn9 = parseFloat(document.getElementById('cn9').value) || 0;
+            let th6 = parseFloat(document.getElementById('th6').value) || 0;
+            let th7 = parseFloat(document.getElementById('th7').value) || 0;
+            let th8 = parseFloat(document.getElementById('th8').value) || 0;
+            let th9 = parseFloat(document.getElementById('th9').value) || 0;
+            let nghethuat6 = parseFloat(document.getElementById('nghethuat6').value) || 0;
+            let nghethuat7 = parseFloat(document.getElementById('nghethuat7').value) || 0;
+            let nghethuat8 = parseFloat(document.getElementById('nghethuat8').value) || 0;
+            let nghethuat9 = parseFloat(document.getElementById('nghethuat9').value) || 0;
+            let hoatdong6 = parseFloat(document.getElementById('hoatdong6').value) || 0;
+            let hoatdong7 = parseFloat(document.getElementById('hoatdong7').value) || 0;
+            let hoatdong8 = parseFloat(document.getElementById('hoatdong8').value) || 0;
+            let hoatdong9 = parseFloat(document.getElementById('hoatdong9').value) || 0;
+            const calculateAverage = (scores) => {
+                const validScores = scores.filter(s => s > 0);
+                return validScores.length > 0 ? validScores.reduce((sum, s) => sum + s, 0) / validScores.length : 0;
+            };
+            let tbVan = calculateAverage([van6, van7, van8, van9]);
+            let tbToan = calculateAverage([toan6, toan7, toan8, toan9]);
+            let tbAnh = calculateAverage([anh6, anh7, anh8, anh9]);
+            let tbGDCD = calculateAverage([gdcd6, gdcd7, gdcd8, gdcd9]);
+            let tbLSDL = calculateAverage([lsdl6, lsdl7, lsdl8, lsdl9]);
+            let tbKHTN = calculateAverage([khtn6, khtn7, khtn8, khtn9]);
+            let tbCN = calculateAverage([cn6, cn7, cn8, cn9]);
+            let tbTH = calculateAverage([th6, th7, th8, th9]);
+            let tbNgheThuat = calculateAverage([nghethuat6, nghethuat7, nghethuat8, nghethuat9]);
+            let tbHoatDong = calculateAverage([hoatdong6, hoatdong7, hoatdong8, hoatdong9]);
+            let allSubjects = [
+                van6, van7, van8, van9,
+                toan6, toan7, toan8, toan9,
+                anh6, anh7, anh8, anh9,
+                gdcd6, gdcd7, gdcd8, gdcd9,
+                lsdl6, lsdl7, lsdl8, lsdl9,
+                khtn6, khtn7, khtn8, khtn9,
+                cn6, cn7, cn8, cn9,
+                th6, th7, th8, th9,
+                nghethuat6, nghethuat7, nghethuat8, nghethuat9,
+                hoatdong6, hoatdong7, hoatdong8, hoatdong9
+            ];
+            let tbAll = calculateAverage(allSubjects);
+            let subjectsScores = [
+                { name: "Ngữ văn", score: tbVan },
+                { name: "Toán", score: tbToan },
+                { name: "Ngoại ngữ", score: tbAnh },
+                { name: "Giáo dục công dân", score: tbGDCD },
+                { name: "Lịch sử - Địa lý", score: tbLSDL },
+                { name: "Khoa học tự nhiên", score: tbKHTN },
+                { name: "Công nghệ", score: tbCN },
+                { name: "Tin học", score: tbTH }
+            ];
+            let highScoringSubjects = subjectsScores.filter(subject => subject.score >= 6.5);
+            if (highScoringSubjects.length < 2) {
+                subjectsScores.sort((a, b) => b.score - a.score);
+                let topSubject = subjectsScores[0];
+                let secondSubject = subjectsScores[1];
+                let recommendedVocations = [];
+                if (topSubject.score < 5.0) {
+                    recommendedVocations.push("Hiện tại điểm số các môn đều thấp, bạn nên tập trung cải thiện học lực trước khi chọn nghề.");
+                } else {
+                    switch(topSubject.name) {
+                        case "Toán":
+                        case "Khoa học tự nhiên":
+                            recommendedVocations.push("Sửa chữa điện", "Cơ khí lắp ráp", "Chế biến thực phẩm");
+                            if (secondSubject.name === "Công nghệ" && secondSubject.score >= 6.0) {
+                                recommendedVocations.push("May công nghiệp");
+                            }
+                            break;
+                        case "Công nghệ":
+                            recommendedVocations.push("May công nghiệp", "Cơ khí lắp ráp", "Hàn cơ khí");
+                            break;
+                        case "Tin học":
+                            recommendedVocations.push("Sửa chữa thiết bị điện tử", "Lắp ráp máy tính", "Cài đặt phần mềm cơ bản");
+                            break;
+                        case "Ngữ văn":
+                        case "Giáo dục công dân":
+                            recommendedVocations.push("Nhân viên dịch vụ khách hàng", "Thư ký văn phòng", "Hỗ trợ hành chính");
+                            break;
+                        case "Ngoại ngữ":
+                            recommendedVocations.push("Nhân viên lễ tân", "Hỗ trợ du lịch cơ bản", "Nhân viên bán hàng");
+                            break;
+                        case "Lịch sử - Địa lý":
+                            recommendedVocations.push("Hỗ trợ du lịch địa phương", "Nhân viên bảo vệ môi trường", "Công nhân nông nghiệp");
+                            break;
+                    }
+                }
+                let resultText = "════════ TƯ VẤN HƯỚNG NGHIỆP ════════\n\n";
+                resultText += `📉 Điểm trung bình tất cả các môn: ${tbAll.toFixed(2)}\n\n`;
+                resultText += "🏭 GỢI Ý HỌC NGHỀ:\n";
+                resultText += `Dựa trên năng lực của bạn, bạn nên cân nhắc học các nghề sau:\n`;
+                recommendedVocations.forEach(vocation => {
+                    resultText += `🔹 ${vocation}\n`;
+                });
+                resultText += "\n📊 ĐIỂM TRUNG BÌNH CÁC MÔN:\n";
+                resultText += `- Ngữ văn: ${tbVan.toFixed(2)}\n`;
+                resultText += `- Toán: ${tbToan.toFixed(2)}\n`;
+                resultText += `- Ngoại ngữ: ${tbAnh.toFixed(2)}\n`;
+                resultText += `- Khoa học tự nhiên: ${tbKHTN.toFixed(2)}\n`;
+                resultText += `- Lịch sử - Địa lý: ${tbLSDL.toFixed(2)}\n`;
+                resultText += `- Công nghệ: ${tbCN.toFixed(2)}\n`;
+                resultText += `- Tin học: ${tbTH.toFixed(2)}\n\n`;
+                resultText += "💡 LỜI KHUYÊN: Điểm số hiện tại cho thấy bạn phù hợp với các chương trình đào tạo nghề cơ bản. Hãy chọn nghề phù hợp với sở thích và năng lực, đồng thời tiếp tục cải thiện các môn học để có thêm cơ hội. Liên hệ với trung tâm hướng nghiệp để biết thêm chi tiết.";
+                document.getElementById("kqtuvan").textContent = resultText;
                 return;
             }
-
-            currentChat.messages.forEach(message => {
-                addMessageToUI(message.role, message.content);
+            const toHop = [
+                {
+                    name: "A00 (Toán, Vật lý, Hóa học)",
+                    subjects: ["Toán", "KHTN"],
+                    weights: [0.6, 0.4],
+                    check: () => tbToan >= 6.5 && tbKHTN >= 6.5
+                },
+                 {
+                    name: "B00 (Toán, Hóa học, Sinh học)",
+                    subjects: ["Toán", "KHTN"],
+                    weights: [0.5, 0.5],
+                    check: () => tbToan >= 6.5 && tbKHTN >= 6.5
+                },
+                {
+                    name: "A01 (Toán, Vật lý, Tiếng Anh)",
+                    subjects: ["Toán", "KHTN", "Anh"],
+                    weights: [0.4, 0.3, 0.3],
+                    check: () => tbToan >= 6.5 && tbKHTN >= 6.5 && tbAnh >= 6.5
+                },
+                {
+                    name: "D01 (Toán, Ngữ văn, Tiếng Anh)",
+                    subjects: ["Toán", "Văn", "Anh"],
+                    weights: [0.4, 0.3, 0.3],
+                    check: () => tbToan >= 6.5 && tbVan >= 6.5 && tbAnh >= 6.5
+                },
+                {
+                    name: "C00 (Ngữ văn, Lịch sử, Địa lý)",
+                    subjects: ["Văn", "LSDL"],
+                    weights: [0.5, 0.5],
+                    check: () => tbVan >= 6.5 && tbLSDL >= 6.5
+                }
+                
+            ];
+            let diemToHop = toHop
+                .filter(comb => comb.check())
+                .map(comb => {
+                    let diem = 0;
+                    comb.subjects.forEach((subject, index) => {
+                        switch(subject) {
+                            case "Văn": diem += tbVan * comb.weights[index]; break;
+                            case "Toán": diem += tbToan * comb.weights[index]; break;
+                            case "Anh": diem += tbAnh * comb.weights[index]; break;
+                            case "GDCD": diem += tbGDCD * comb.weights[index]; break;
+                            case "LSDL": diem += tbLSDL * comb.weights[index]; break;
+                            case "KHTN": diem += tbKHTN * comb.weights[index]; break;
+                            case "CN": diem += tbCN * comb.weights[index]; break;
+                            case "TH": diem += tbTH * comb.weights[index]; break;
+                        }
+                    });
+                    return {
+                        name: comb.name,
+                        diem: diem
+                    };
+                });
+            diemToHop.sort((a, b) => b.diem - a.diem);
+            let resultText = "════════ TƯ VẤN TỔ HỢP MÔN HỌC ════════\n\n";
+            resultText += `📊 Điểm trung bình tất cả các môn: ${tbAll.toFixed(2)}\n\n`;
+            if (diemToHop.length === 0) {
+                resultText += "⚠️ Không tìm thấy tổ hợp môn học nào phù hợp do không đủ môn có điểm từ 6.5 trở lên.\n\n";
+                resultText += "💡 LỜI KHUYÊN: Bạn nên tập trung cải thiện điểm số các môn học chính (Toán, Ngữ văn, Ngoại ngữ, Khoa học tự nhiên, Lịch sử - Địa lý) để đủ điều kiện xét tổ hợp môn học.";
+            } else {
+                resultText += "🏆 TỔ HỢP PHÙ HỢP NHẤT:\n";
+                resultText += `🔹 ${diemToHop[0].name}\n`;
+                resultText += ` Điểm đánh giá: ${diemToHop[0].diem.toFixed(2)}\n\n`;
+                if (diemToHop.length > 1) {
+                    resultText += "🥈 TỔ HỢP PHÙ HỢP THỨ 2:\n";
+                    resultText += `🔹 ${diemToHop[1].name}\n`;
+                    resultText += ` Điểm đánh giá: ${diemToHop[1].diem.toFixed(2)}\n\n`;
+                }
+                resultText += "📊 ĐIỂM TRUNG BÌNH CÁC MÔN:\n";
+                resultText += `- Ngữ văn: ${tbVan.toFixed(2)}\n`;
+                resultText += `- Toán: ${tbToan.toFixed(2)}\n`;
+                resultText += `- Ngoại ngữ: ${tbAnh.toFixed(2)}\n`;
+                resultText += `- Khoa học tự nhiên: ${tbKHTN.toFixed(2)}\n`;
+                resultText += `- Lịch sử - Địa lý: ${tbLSDL.toFixed(2)}\n`;
+                resultText += `- Công nghệ: ${tbCN.toFixed(2)}\n`;
+                resultText += `- Tin học: ${tbTH.toFixed(2)}\n\n`;
+                resultText += "💡 GỢI Ý: Bạn nên ưu tiên chọn tổ hợp có điểm cao nhất phù hợp với năng lực và sở thích của mình. Nếu có thắc mắc, hãy trao đổi thêm với giáo viên chủ nhiệm hoặc chuyên viên hướng nghiệp.\n";
+                 resultText += "CHÚ Ý: Các môn được đề xuất tổ hợp trên là các môn ở chương trình cấp 3.";
+            }
+            document.getElementById("kqtuvan").textContent = resultText;
+        };
+        document.getElementById("xoa").onclick = function() {
+            const inputElements = document.querySelectorAll('.display-box');
+            inputElements.forEach(input => {
+                input.value = "";
             });
-            scrollToBottom();
-        }
-
-        function updateChatTitle(chat) {
-            if (!chat || !chat.messages || chat.messages.length === 0) return;
-
-            const firstUserMessage = chat.messages.find(msg => msg.role === "user");
-            if (firstUserMessage) {
-                chat.title = firstUserMessage.content.substring(0, 20) + (firstUserMessage.content.length > 20 ? "..." : "");
-            }
-            saveChats();
-        }
-
-        function saveChats() {
-            localStorage.setItem('university-chats', JSON.stringify(chats));
-        }
-
-        function loadChats() {
-            const storedChats = localStorage.getItem('university-chats');
-            if (storedChats) {
-                chats = JSON.parse(storedChats);
-            }
-        }
-
-        // Khởi chạy ứng dụng
-        document.addEventListener('DOMContentLoaded', initApp);
+            document.getElementById("kqtuvan").textContent = "";
+            document.getElementById("fileName").textContent = "Chưa chọn file nào";
+            selectedFile = null;
+        };
     </script>
 </body>
 </html>
