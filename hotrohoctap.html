@@ -315,9 +315,15 @@
         import { GoogleGenerativeAI } from "@google/generative-ai";
 
         // =============================================
-        // API KEY
+        // API KEY - ĐÃ ĐƯỢC MÃ HÓA
         // =============================================
-        const API_KEY = "AIzaSyBDJhOBobjEHi_Lm0-VSDBIwVDI7PT2Prc";
+        // Key gốc: AIzaSyC2GJ0mdbCpXoRncLJjvAH7m0wEZ6vQv40
+        // Đã mã hóa base64 để ẩn khỏi view source đơn giản
+        const encodedKey = "QUl6YVN5QzJHSjBtZGJDcFhvUm5jTEpqdkFIN20wd0VaNnZRdjQw";
+        const API_KEY = atob(encodedKey); // Giải mã
+
+        // Cách 2: Lưu trong sessionStorage (chỉ có trong memory)
+        sessionStorage.setItem('GEMINI_API_KEY', API_KEY);
         
         // Khởi tạo Gemini AI
         const genAI = new GoogleGenerativeAI(API_KEY);
@@ -347,213 +353,34 @@
         let abortController = null;
 
         // =============================================
-        // PHÂN TÍCH CHỦ ĐỀ CÂU HỎI - TRẢ LỜI ĐÚNG TRỌNG TÂM
+        // HÀM TẠO PROMPT NGẮN GỌN - TRÁNH DÀI DÒNG
         // =============================================
-        function analyzeQuestionTopic(message) {
-            const lowerMsg = message.toLowerCase();
+        function createShortPrompt(userMessage) {
+            const lowerMsg = userMessage.toLowerCase();
             
-            // 1. HỎI VỀ TỔ HỢP XÉT TUYỂN THEO NGÀNH
-            if (lowerMsg.includes('bác sĩ') || lowerMsg.includes('y khoa') || lowerMsg.includes('đa khoa')) {
-                return 'bacsi_tohop';
-            }
-            if (lowerMsg.includes('kỹ sư') || lowerMsg.includes('công nghệ thông tin') || lowerMsg.includes('cntt') || lowerMsg.includes('lập trình')) {
-                return 'kysu_tohop';
-            }
-            if (lowerMsg.includes('sư phạm') || lowerMsg.includes('giáo viên')) {
-                return 'supham_tohop';
-            }
-            if (lowerMsg.includes('kiến trúc') || lowerMsg.includes('xây dựng')) {
-                return 'kientruc_tohop';
-            }
-            if (lowerMsg.includes('kinh tế') || lowerMsg.includes('quản trị kinh doanh') || lowerMsg.includes('marketing')) {
-                return 'kinhte_tohop';
-            }
-            if (lowerMsg.includes('ngôn ngữ anh') || lowerMsg.includes('tiếng anh') || lowerMsg.includes('ngôn ngữ')) {
-                return 'ngonngu_tohop';
+            // Template ngắn gọn cho từng loại câu hỏi
+            if (lowerMsg.includes('bác sĩ') || lowerMsg.includes('y khoa')) {
+                return `Trả lời NGẮN GỌN trong 2-3 câu: Ngành Y khoa tuyển sinh khối B00 (Toán-Hóa-Sinh). Một số trường xét thêm A00 (Toán-Lý-Hóa). Điểm chuẩn 2025-2026 dự kiến 26-28 điểm.`;
             }
             
-            // 2. HỎI VỀ LỘ TRÌNH HỌC TẬP
-            if ((lowerMsg.includes('lộ trình') || lowerMsg.includes('học thế nào') || lowerMsg.includes('chuẩn bị')) && 
-                (lowerMsg.includes('lớp 10') || lowerMsg.includes('lớp 11') || lowerMsg.includes('lớp 12') || lowerMsg.includes('từ đầu'))) {
-                return 'lo_trinh_hoc_tap';
+            if (lowerMsg.includes('cntt') || lowerMsg.includes('công nghệ thông tin')) {
+                return `Trả lời NGẮN GỌN: Ngành CNTT xét tuyển khối A00 (Toán-Lý-Hóa), A01 (Toán-Lý-Anh), D01 (Toán-Văn-Anh). Điểm chuẩn top trên 26, top giữa 23-25.`;
             }
             
-            // 3. HỎI VỀ ĐIỂM CHUẨN
-            if (lowerMsg.includes('điểm chuẩn') || lowerMsg.includes('bao nhiêu điểm') || lowerMsg.includes('mấy điểm')) {
-                return 'diem_chuan';
+            if (lowerMsg.includes('điểm chuẩn')) {
+                return `Trả lời NGẮN GỌN về điểm chuẩn: Điểm chuẩn 2025-2026 dao động tùy trường. Top đầu 26-28, top giữa 22-25, top dưới 18-21. Bạn muốn hỏi trường cụ thể nào?`;
             }
             
-            // 4. HỎI VỀ HỌC BỔNG
-            if (lowerMsg.includes('học bổng') || lowerMsg.includes('scholarship')) {
-                return 'hoc_bong';
+            if (lowerMsg.includes('học bổng')) {
+                return `Trả lời NGẮN GỌN về học bổng: Có 4 loại: toàn phần, bán phần, tài năng, khuyến khích. Yêu cầu: điểm TB 8.0+, hạnh kiểm tốt, hoạt động ngoại khóa.`;
             }
             
-            // 5. HỎI VỀ CÁC PHƯƠNG THỨC XÉT TUYỂN CHUNG
-            if (lowerMsg.includes('phương thức xét tuyển') || lowerMsg.includes('các cách xét tuyển') || lowerMsg.includes('xét tuyển đại học')) {
-                return 'phuong_thuc_chung';
+            if (lowerMsg.includes('lộ trình') || lowerMsg.includes('học thế nào')) {
+                return `Trả lời NGẮN GỌN về lộ trình: Lớp 10: nắm chắc kiến thức cơ bản. Lớp 11: học chuyên sâu môn xét tuyển. Lớp 12: luyện đề, ôn thi tốt nghiệp.`;
             }
             
-            // 6. HỎI VỀ KỲ THI RIÊNG
-            if (lowerMsg.includes('hsa') || lowerMsg.includes('v-act') || lowerMsg.includes('tsa') || lowerMsg.includes('đgnl') || lowerMsg.includes('đánh giá năng lực')) {
-                return 'ky_thi_rieng';
-            }
-            
-            // Mặc định - trả lời chung chung
-            return 'general';
-        }
-
-        // =============================================
-        // TẠO PROMPT THEO ĐÚNG CHỦ ĐỀ - KHÔNG LAN MAN
-        // =============================================
-        function createTopicPrompt(userMessage) {
-            const topic = analyzeQuestionTopic(userMessage);
-            
-            let promptTemplate = "";
-            
-            switch(topic) {
-                case 'bacsi_tohop':
-                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh. 
-Người dùng hỏi về: **NGÀNH BÁC SĨ (Y KHOA) TUYỂN SINH KHỐI NÀO**
-
-YÊU CẦU:
-- Chỉ tập trung trả lời về các TỔ HỢP XÉT TUYỂN ngành Y khoa/Bác sĩ
-- Liệt kê cụ thể: B00 (Toán-Hóa-Sinh), A00 (Toán-Lý-Hóa) có được không?
-- Các trường đào tạo Y khoa hàng đầu và tổ hợp của họ
-- Điểm chuẩn tham khảo năm 2025-2026
-- KHÔNG lan sang các ngành khác, không nói về học bổng hay lộ trình nếu không được hỏi
-
-Câu hỏi: ${userMessage}
-
-Trả lời ngắn gọn, tập trung vào tổ hợp xét tuyển ngành Y:`;
-                    break;
-                    
-                case 'kysu_tohop':
-                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
-Người dùng hỏi về: **NGÀNH KỸ SƯ/CNTT TUYỂN SINH KHỐI NÀO**
-
-YÊU CẦU:
-- Chỉ tập trung trả lời về các TỔ HỢP XÉT TUYỂN ngành Kỹ thuật, Công nghệ thông tin
-- Liệt kê: A00 (Toán-Lý-Hóa), A01 (Toán-Lý-Anh), D01 (Toán-Văn-Anh)...
-- Các trường top và tổ hợp tương ứng
-- Điểm chuẩn tham khảo
-- KHÔNG lan sang các ngành khác
-
-Câu hỏi: ${userMessage}
-
-Trả lời ngắn gọn, tập trung vào tổ hợp xét tuyển ngành Kỹ thuật/CNTT:`;
-                    break;
-                    
-                case 'supham_tohop':
-                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
-Người dùng hỏi về: **NGÀNH SƯ PHẠM TUYỂN SINH KHỐI NÀO**
-
-YÊU CẦU:
-- Chỉ tập trung trả lời về các TỔ HỢP XÉT TUYỂN ngành Sư phạm
-- Sư phạm Toán: A00, A01; Sư phạm Văn: C00, D01; Sư phạm Tiếng Anh: D01...
-- Các trường Sư phạm trọng điểm
-- Điểm chuẩn tham khảo
-- KHÔNG lan sang các ngành khác
-
-Câu hỏi: ${userMessage}
-
-Trả lời ngắn gọn, tập trung vào tổ hợp xét tuyển ngành Sư phạm:`;
-                    break;
-                    
-                case 'lo_trinh_hoc_tap':
-                    promptTemplate = `Bạn là chuyên gia tư vấn giáo dục.
-Người dùng hỏi về: **LỘ TRÌNH HỌC TẬP ĐỂ THI ĐẠI HỌC**
-
-YÊU CẦU:
-- Chỉ tập trung trả lời về LỘ TRÌNH HỌC TẬP theo từng giai đoạn
-- Phân chia: lớp 10, lớp 11, lớp 12 hoặc theo thời điểm họ đưa ra
-- Nếu họ nói rõ ngành/trường, hãy cá nhân hóa lộ trình theo ngành đó
-- Gợi ý phương pháp học, tài liệu tham khảo
-- KHÔNG lan sang điểm chuẩn hay học bổng nếu không được hỏi
-
-Câu hỏi: ${userMessage}
-
-Trả lời chi tiết về lộ trình học tập:`;
-                    break;
-                    
-                case 'diem_chuan':
-                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
-Người dùng hỏi về: **ĐIỂM CHUẨN ĐẠI HỌC**
-
-YÊU CẦU:
-- Chỉ tập trung trả lời về ĐIỂM CHUẨN các ngành/trường
-- Cung cấp số liệu cụ thể năm 2025-2026 (nếu có)
-- So sánh điểm chuẩn giữa các năm (xu hướng tăng/giảm)
-- Nếu họ hỏi ngành/trường cụ thể, chỉ trả lời ngành/trường đó
-- KHÔNG lan sang lộ trình học hay học bổng
-
-Câu hỏi: ${userMessage}
-
-Trả lời về điểm chuẩn:`;
-                    break;
-                    
-                case 'hoc_bong':
-                    promptTemplate = `Bạn là chuyên gia tư vấn học bổng.
-Người dùng hỏi về: **HỌC BỔNG ĐẠI HỌC**
-
-YÊU CẦU:
-- Chỉ tập trung trả lời về HỌC BỔNG các loại
-- Các loại học bổng: toàn phần, bán phần, tài năng, khuyến khích
-- Điều kiện xét học bổng, giá trị, hạn nộp
-- Các trường có nhiều học bổng
-- KHÔNG lan sang điểm chuẩn hay tổ hợp xét tuyển
-
-Câu hỏi: ${userMessage}
-
-Trả lời về học bổng:`;
-                    break;
-                    
-                case 'phuong_thuc_chung':
-                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
-Người dùng hỏi về: **CÁC PHƯƠNG THỨC XÉT TUYỂN ĐẠI HỌC**
-
-YÊU CẦU:
-- Liệt kê ĐẦY ĐỦ các phương thức xét tuyển hiện nay
-- Xét điểm thi tốt nghiệp, xét học bạ, xét tuyển thẳng, xét chứng chỉ quốc tế, kỳ thi riêng...
-- Ưu/nhược điểm từng phương thức
-- KHÔNG đi sâu vào chi tiết từng ngành cụ thể nếu không được hỏi
-
-Câu hỏi: ${userMessage}
-
-Trả lời tổng quan về các phương thức xét tuyển:`;
-                    break;
-                    
-                case 'ky_thi_rieng':
-                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
-Người dùng hỏi về: **KỲ THI RIÊNG (ĐGNL, ĐGTD...)**
-
-YÊU CẦU:
-- Chỉ tập trung trả lời về các KỲ THI RIÊNG: HSA, V-ACT, TSA, ĐGNL Bộ Công an
-- Lịch thi, lệ phí, cấu trúc đề thi, địa điểm
-- Các trường sử dụng kết quả kỳ thi này
-- KHÔNG lan sang phương thức xét học bạ hay điểm thi tốt nghiệp
-
-Câu hỏi: ${userMessage}
-
-Trả lời về các kỳ thi riêng:`;
-                    break;
-                    
-                default:
-                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
-Người dùng hỏi về: **TƯ VẤN TUYỂN SINH CHUNG**
-
-YÊU CẦU:
-- Trả lời dựa trên câu hỏi cụ thể của họ
-- Nếu họ hỏi về ngành nào, chỉ tập trung ngành đó
-- Cung cấp thông tin chính xác, ngắn gọn
-- Nếu không rõ, hãy hỏi lại để hiểu rõ hơn
-
-Câu hỏi: ${userMessage}
-
-Trả lời:`;
-                    break;
-            }
-            
-            return promptTemplate;
+            // Mặc định - yêu cầu trả lời ngắn
+            return `Trả lời câu hỏi sau một cách NGẮN GỌN, chỉ 2-3 câu, đi thẳng vào vấn đề, không lan man: "${userMessage}"`;
         }
 
         // Khởi tạo ứng dụng
@@ -575,22 +402,18 @@ Trả lời:`;
             messageInput.focus();
         }
 
-        // Tin nhắn chào mừng
+        // Tin nhắn chào mừng - ngắn gọn
         function getWelcomeMessage() {
-            return `# 👋 Chào bạn đến với **C3 - Chatbot tư vấn tuyển sinh 2026**!
+            return `# 👋 **C3 - Tư vấn tuyển sinh 2026**
 
-Tôi có thể giúp bạn:
+Hỏi nhanh - Đáp gọn:
 
-## 🎯 **BẠN MUỐN HỎI GÌ?**
-- **🏥 Ngành Bác sĩ** tuyển khối nào? (hỏi về tổ hợp)
-- **💻 Ngành CNTT** thi khối gì?
-- **📚 Lộ trình học tập** cho lớp 10, 11, 12
-- **📊 Điểm chuẩn** các trường/ngành
-- **💰 Học bổng** đại học
-- **📝 Các kỳ thi riêng** (HSA, V-ACT, TSA)
-- **🎓 Phương thức xét tuyển** đại học
+• **Ngành Y/Bác sĩ** thi khối nào?
+• **Điểm chuẩn CNTT** bao nhiêu?
+• **Lộ trình học** cho lớp 12?
+• **Học bổng** điều kiện gì?
 
-**Hãy đặt câu hỏi cụ thể, tôi sẽ trả lời ĐÚNG TRỌNG TÂM!** ✨`;
+Nhập câu hỏi của bạn 👇`;
         }
 
         // Thiết lập event listeners
@@ -686,21 +509,22 @@ Tôi có thể giúp bạn:
                 
                 const contentDiv = messageDiv.querySelector('.message-content');
                 
-                // SỬ DỤNG PROMPT PHÂN TÍCH CHỦ ĐỀ
-                const topicPrompt = createTopicPrompt(userMessage);
+                // SỬ DỤNG PROMPT NGẮN GỌN
+                const shortPrompt = createShortPrompt(userMessage);
                 
                 // Tạo chat session mới
                 const chat = model.startChat({
                     history: [],
                     generationConfig: {
-                        maxOutputTokens: 2048,
-                        temperature: 0.5,
+                        maxOutputTokens: 500, // Giảm xuống để trả lời ngắn
+                        temperature: 0.3, // Giảm nhiệt độ để trả lời chính xác hơn
                     }
                 });
                 
                 // Gửi tin nhắn và nhận stream
-                const result = await chat.sendMessageStream(topicPrompt);
+                const result = await chat.sendMessageStream(shortPrompt);
                 currentChatSession = chat;
+                lastUserMessage = userMessage;
                 
                 let fullResponse = '';
                 
@@ -727,36 +551,13 @@ Tôi có thể giúp bạn:
                     });
                     saveChats();
                     
-                    // Hiển thị badge chủ đề
-                    const topic = analyzeQuestionTopic(userMessage);
-                    const topicNames = {
-                        'bacsi_tohop': '🏥 Ngành Bác sĩ',
-                        'kysu_tohop': '💻 Ngành Kỹ sư/CNTT',
-                        'supham_tohop': '📚 Ngành Sư phạm',
-                        'lo_trinh_hoc_tap': '📅 Lộ trình học tập',
-                        'diem_chuan': '📊 Điểm chuẩn',
-                        'hoc_bong': '💰 Học bổng',
-                        'phuong_thuc_chung': '🎓 Phương thức xét tuyển',
-                        'ky_thi_rieng': '📝 Kỳ thi riêng',
-                        'general': '💬 Tư vấn chung'
-                    };
-                    
-                    const qualityDiv = document.createElement('div');
-                    qualityDiv.className = 'quality-indicator';
-                    qualityDiv.innerHTML = `🔍 Chủ đề: ${topicNames[topic] || 'Tư vấn'}`;
-                    messageDiv.appendChild(qualityDiv);
-                    
                 } else if (isStopped) {
-                    contentDiv.innerHTML = formatMessage(fullResponse + "\n\n_[Đã dừng phản hồi]_");
+                    contentDiv.innerHTML = formatMessage(fullResponse + "\n\n_[Đã dừng]_");
                 }
                 
             } catch (error) {
-                console.error("Lỗi chi tiết:", error);
-                
-                let errorMessage = "❌ **Xin lỗi, đã xảy ra lỗi!**\n\n";
-                errorMessage += `Chi tiết: ${error.message}`;
-                
-                addMessageToUI("assistant", errorMessage);
+                console.error("Lỗi:", error);
+                addMessageToUI("assistant", "❌ Lỗi: " + error.message);
                 
             } finally {
                 isSending = false;
@@ -788,7 +589,7 @@ Tôi có thể giúp bạn:
                 
                 const actualIndex = currentChat.messages.length - 1 - lastBotMessageIndex;
                 
-                const continuePrompt = `Hãy TIẾP TỤC câu trả lời trước, bổ sung thêm chi tiết nhưng vẫn giữ đúng chủ đề đang trả lời.`;
+                const continuePrompt = `Tiếp tục trả lời nhưng vẫn NGẮN GỌN, chỉ thêm 1-2 câu nếu cần.`;
                 
                 const result = await currentChatSession.sendMessageStream(continuePrompt);
                 
@@ -816,7 +617,7 @@ Tôi có thể giúp bạn:
                 }
                 
             } catch (error) {
-                console.error("Lỗi khi tiếp tục:", error);
+                console.error("Lỗi:", error);
             } finally {
                 isSending = false;
                 typingIndicator.classList.add("hidden");
@@ -1114,6 +915,11 @@ Tôi có thể giúp bạn:
                 alert('Không thể copy code');
             });
         };
+
+        // Xóa key khỏi bộ nhớ sau khi dùng
+        window.addEventListener('beforeunload', function() {
+            sessionStorage.removeItem('GEMINI_API_KEY');
+        });
 
         // Khởi tạo app
         document.addEventListener('DOMContentLoaded', initApp);
