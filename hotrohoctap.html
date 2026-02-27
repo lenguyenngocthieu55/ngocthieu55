@@ -173,35 +173,33 @@
         .user-message {
             align-self: flex-end;
             background-color: #4f46e5;
-            border-radius: 1rem;
+            border-radius: 1rem 1rem 0.25rem 1rem;
             max-width: 80%;
             margin-left: auto;
-            padding: 0.75rem;
+            padding: 0.75rem 1rem;
         }
         
         .bot-message {
             align-self: flex-start;
             background-color: #1e293b;
-            border-radius: 1rem;
-            max-width: 80%;
+            border-radius: 1rem 1rem 1rem 0.25rem;
+            max-width: 90%;
             margin-right: auto;
-            padding: 0.75rem;
+            padding: 0.75rem 1rem;
         }
         
         .typing-indicator {
             align-self: flex-start;
             background-color: #1e293b;
-            border-radius: 1rem;
+            border-radius: 1rem 1rem 1rem 0.25rem;
             max-width: 80%;
             margin-right: auto;
-            padding: 0.75rem;
+            padding: 0.75rem 1rem;
         }
         
         .message-content {
             word-wrap: break-word;
             white-space: pre-wrap;
-            border-radius: 0.5rem;
-            padding: 0.5rem;
         }
         
         .transition-all {
@@ -229,6 +227,12 @@
             font-size: 12px;
             color: #94a3b8;
             margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid #334155;
+        }
+        
+        #chat-messages {
+            min-height: 100%;
         }
     </style>
 </head>
@@ -236,51 +240,63 @@
 
     <div id="app" class="flex flex-1 overflow-hidden">
 
+        <!-- Sidebar -->
         <div id="sidebar" class="w-48 bg-dark-sidebar shadow-lg border-r border-gray-700 flex flex-col h-full">
-
             <div class="p-3">
-                <button id="new-chat-btn" class="w-10 h-10 flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-md transition">
-                    <i class="fa-solid fa-file-circle-plus"></i>
+                <button id="new-chat-btn" class="w-10 h-10 flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-md transition" title="Tạo cuộc trò chuyện mới">
+                    <i class="fa-solid fa-plus"></i>
                 </button>
             </div>
             
-            <div id="chat-history" class="flex-1 overflow-y-auto hide-scrollbar p-2">
+            <div id="chat-history" class="flex-1 overflow-y-auto hide-scrollbar p-2 space-y-1">
             </div>
         </div>
         
+        <!-- Main Chat Area -->
         <div class="flex-1 flex flex-col h-full overflow-hidden">
             <header class="p-4 border-b border-gray-700 bg-dark-bg">
-                <h1 class="text-xl font-semibold text-left">C3 | Chatbot AI Đa Năng - Trả lời ngắn gọn, trọng tâm</h1>
+                <h1 class="text-xl font-semibold text-left">C3 | Chatbot AI Đa Năng - Tư vấn tuyển sinh 2026</h1>
             </header>
             
-            <div id="chat-container" class="flex-1 overflow-y-auto hide-scrollbar p-4 bg-gray-900 flex flex-col gap-3">
+            <div id="chat-container" class="flex-1 overflow-y-auto hide-scrollbar p-4 bg-gray-900">
                 <div id="chat-messages" class="flex flex-col gap-3 mx-auto max-w-3xl w-full">
+                    <!-- Messages will be inserted here -->
+                </div>
+                
+                <!-- Typing Indicator -->
+                <div id="typing-indicator" class="hidden max-w-3xl mx-auto mt-2">
+                    <div class="typing-indicator">
+                        <span class="typing-dots">AI đang suy nghĩ</span>
+                    </div>
                 </div>
             </div>
-            
-            <div id="typing-indicator" class="hidden max-w-3xl mx-auto p-4 mb-4">
-                <span class="typing-dots">AI đang suy nghĩ, vui lòng đợi giây lát</span>
-            </div>
-            <div id="stop-button-container" class="hidden max-w-3xl mx-auto p-4 mb-4">
-                <button id="stop-response-btn" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm">
-                    Dừng phản hồi
+
+            <!-- Control Buttons -->
+            <div id="stop-button-container" class="hidden max-w-3xl mx-auto p-2">
+                <button id="stop-response-btn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-stop mr-2"></i>Dừng phản hồi
                 </button>
             </div>
-            <div id="continue-button-container" class="hidden max-w-3xl mx-auto p-4 mb-4">
+            
+            <div id="continue-button-container" class="hidden max-w-3xl mx-auto p-2">
                 <button id="continue-response-btn" class="continue-btn">
                     <i class="fas fa-arrow-down mr-2"></i>Tiếp tục câu trả lời
                 </button>
             </div>
 
+            <!-- Input Area -->
             <div class="p-4 border-t border-gray-700 bg-dark-bg">
                 <div class="max-w-3xl mx-auto">
                     <form id="chat-form" class="relative">
                         <textarea 
                             id="message-input" 
-                            class="w-full p-4 rounded-lg border border-gray-600 bg-dark-hover resize-none focus:outline-none focus:ring-2 focus:ring-primary text-white"
-                            placeholder="Nhập câu hỏi của bạn ở đây... (Yêu cầu trả lời ngắn gọn, trọng tâm)"
+                            class="w-full p-4 pr-12 rounded-lg border border-gray-600 bg-dark-hover resize-none focus:outline-none focus:ring-2 focus:ring-primary text-white"
+                            placeholder="Nhập câu hỏi tuyển sinh của bạn..."
                             rows="1"
                         ></textarea>
+                        <button type="submit" class="absolute right-3 bottom-3 text-primary hover:text-primary/80 transition" id="send-button">
+                            <i class="fas fa-paper-plane text-xl"></i>
+                        </button>
                     </form>
                 </div>
             </div>
@@ -298,28 +314,249 @@
     <script type="module">
         import { GoogleGenerativeAI } from "@google/generative-ai";
 
-        const API_KEY = "AIzaSyAPfq0UI4pkxxG4n8obzoViQLLlJ4kRFwM";
+        // =============================================
+        // API KEY
+        // =============================================
+        const API_KEY = "AIzaSyBDJhOBobjEHi_Lm0-VSDBIwVDI7PT2Prc";
+        
+        // Khởi tạo Gemini AI
         const genAI = new GoogleGenerativeAI(API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
+        // DOM Elements
         const chatContainer = document.getElementById('chat-container');
         const chatMessages = document.getElementById('chat-messages');
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
         const newChatBtn = document.getElementById('new-chat-btn');
         const chatHistory = document.getElementById('chat-history');
         const typingIndicator = document.getElementById('typing-indicator');
         const stopButtonContainer = document.getElementById('stop-button-container');
         const continueButtonContainer = document.getElementById('continue-button-container');
         const continueResponseBtn = document.getElementById('continue-response-btn');
+        const stopResponseBtn = document.getElementById('stop-response-btn');
 
+        // State
         let chats = [];
         let currentChatId = null;
         let isSending = false;
         let isStopped = false;
         let currentChatSession = null;
         let lastUserMessage = "";
+        let abortController = null;
 
+        // =============================================
+        // PHÂN TÍCH CHỦ ĐỀ CÂU HỎI - TRẢ LỜI ĐÚNG TRỌNG TÂM
+        // =============================================
+        function analyzeQuestionTopic(message) {
+            const lowerMsg = message.toLowerCase();
+            
+            // 1. HỎI VỀ TỔ HỢP XÉT TUYỂN THEO NGÀNH
+            if (lowerMsg.includes('bác sĩ') || lowerMsg.includes('y khoa') || lowerMsg.includes('đa khoa')) {
+                return 'bacsi_tohop';
+            }
+            if (lowerMsg.includes('kỹ sư') || lowerMsg.includes('công nghệ thông tin') || lowerMsg.includes('cntt') || lowerMsg.includes('lập trình')) {
+                return 'kysu_tohop';
+            }
+            if (lowerMsg.includes('sư phạm') || lowerMsg.includes('giáo viên')) {
+                return 'supham_tohop';
+            }
+            if (lowerMsg.includes('kiến trúc') || lowerMsg.includes('xây dựng')) {
+                return 'kientruc_tohop';
+            }
+            if (lowerMsg.includes('kinh tế') || lowerMsg.includes('quản trị kinh doanh') || lowerMsg.includes('marketing')) {
+                return 'kinhte_tohop';
+            }
+            if (lowerMsg.includes('ngôn ngữ anh') || lowerMsg.includes('tiếng anh') || lowerMsg.includes('ngôn ngữ')) {
+                return 'ngonngu_tohop';
+            }
+            
+            // 2. HỎI VỀ LỘ TRÌNH HỌC TẬP
+            if ((lowerMsg.includes('lộ trình') || lowerMsg.includes('học thế nào') || lowerMsg.includes('chuẩn bị')) && 
+                (lowerMsg.includes('lớp 10') || lowerMsg.includes('lớp 11') || lowerMsg.includes('lớp 12') || lowerMsg.includes('từ đầu'))) {
+                return 'lo_trinh_hoc_tap';
+            }
+            
+            // 3. HỎI VỀ ĐIỂM CHUẨN
+            if (lowerMsg.includes('điểm chuẩn') || lowerMsg.includes('bao nhiêu điểm') || lowerMsg.includes('mấy điểm')) {
+                return 'diem_chuan';
+            }
+            
+            // 4. HỎI VỀ HỌC BỔNG
+            if (lowerMsg.includes('học bổng') || lowerMsg.includes('scholarship')) {
+                return 'hoc_bong';
+            }
+            
+            // 5. HỎI VỀ CÁC PHƯƠNG THỨC XÉT TUYỂN CHUNG
+            if (lowerMsg.includes('phương thức xét tuyển') || lowerMsg.includes('các cách xét tuyển') || lowerMsg.includes('xét tuyển đại học')) {
+                return 'phuong_thuc_chung';
+            }
+            
+            // 6. HỎI VỀ KỲ THI RIÊNG
+            if (lowerMsg.includes('hsa') || lowerMsg.includes('v-act') || lowerMsg.includes('tsa') || lowerMsg.includes('đgnl') || lowerMsg.includes('đánh giá năng lực')) {
+                return 'ky_thi_rieng';
+            }
+            
+            // Mặc định - trả lời chung chung
+            return 'general';
+        }
+
+        // =============================================
+        // TẠO PROMPT THEO ĐÚNG CHỦ ĐỀ - KHÔNG LAN MAN
+        // =============================================
+        function createTopicPrompt(userMessage) {
+            const topic = analyzeQuestionTopic(userMessage);
+            
+            let promptTemplate = "";
+            
+            switch(topic) {
+                case 'bacsi_tohop':
+                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh. 
+Người dùng hỏi về: **NGÀNH BÁC SĨ (Y KHOA) TUYỂN SINH KHỐI NÀO**
+
+YÊU CẦU:
+- Chỉ tập trung trả lời về các TỔ HỢP XÉT TUYỂN ngành Y khoa/Bác sĩ
+- Liệt kê cụ thể: B00 (Toán-Hóa-Sinh), A00 (Toán-Lý-Hóa) có được không?
+- Các trường đào tạo Y khoa hàng đầu và tổ hợp của họ
+- Điểm chuẩn tham khảo năm 2025-2026
+- KHÔNG lan sang các ngành khác, không nói về học bổng hay lộ trình nếu không được hỏi
+
+Câu hỏi: ${userMessage}
+
+Trả lời ngắn gọn, tập trung vào tổ hợp xét tuyển ngành Y:`;
+                    break;
+                    
+                case 'kysu_tohop':
+                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
+Người dùng hỏi về: **NGÀNH KỸ SƯ/CNTT TUYỂN SINH KHỐI NÀO**
+
+YÊU CẦU:
+- Chỉ tập trung trả lời về các TỔ HỢP XÉT TUYỂN ngành Kỹ thuật, Công nghệ thông tin
+- Liệt kê: A00 (Toán-Lý-Hóa), A01 (Toán-Lý-Anh), D01 (Toán-Văn-Anh)...
+- Các trường top và tổ hợp tương ứng
+- Điểm chuẩn tham khảo
+- KHÔNG lan sang các ngành khác
+
+Câu hỏi: ${userMessage}
+
+Trả lời ngắn gọn, tập trung vào tổ hợp xét tuyển ngành Kỹ thuật/CNTT:`;
+                    break;
+                    
+                case 'supham_tohop':
+                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
+Người dùng hỏi về: **NGÀNH SƯ PHẠM TUYỂN SINH KHỐI NÀO**
+
+YÊU CẦU:
+- Chỉ tập trung trả lời về các TỔ HỢP XÉT TUYỂN ngành Sư phạm
+- Sư phạm Toán: A00, A01; Sư phạm Văn: C00, D01; Sư phạm Tiếng Anh: D01...
+- Các trường Sư phạm trọng điểm
+- Điểm chuẩn tham khảo
+- KHÔNG lan sang các ngành khác
+
+Câu hỏi: ${userMessage}
+
+Trả lời ngắn gọn, tập trung vào tổ hợp xét tuyển ngành Sư phạm:`;
+                    break;
+                    
+                case 'lo_trinh_hoc_tap':
+                    promptTemplate = `Bạn là chuyên gia tư vấn giáo dục.
+Người dùng hỏi về: **LỘ TRÌNH HỌC TẬP ĐỂ THI ĐẠI HỌC**
+
+YÊU CẦU:
+- Chỉ tập trung trả lời về LỘ TRÌNH HỌC TẬP theo từng giai đoạn
+- Phân chia: lớp 10, lớp 11, lớp 12 hoặc theo thời điểm họ đưa ra
+- Nếu họ nói rõ ngành/trường, hãy cá nhân hóa lộ trình theo ngành đó
+- Gợi ý phương pháp học, tài liệu tham khảo
+- KHÔNG lan sang điểm chuẩn hay học bổng nếu không được hỏi
+
+Câu hỏi: ${userMessage}
+
+Trả lời chi tiết về lộ trình học tập:`;
+                    break;
+                    
+                case 'diem_chuan':
+                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
+Người dùng hỏi về: **ĐIỂM CHUẨN ĐẠI HỌC**
+
+YÊU CẦU:
+- Chỉ tập trung trả lời về ĐIỂM CHUẨN các ngành/trường
+- Cung cấp số liệu cụ thể năm 2025-2026 (nếu có)
+- So sánh điểm chuẩn giữa các năm (xu hướng tăng/giảm)
+- Nếu họ hỏi ngành/trường cụ thể, chỉ trả lời ngành/trường đó
+- KHÔNG lan sang lộ trình học hay học bổng
+
+Câu hỏi: ${userMessage}
+
+Trả lời về điểm chuẩn:`;
+                    break;
+                    
+                case 'hoc_bong':
+                    promptTemplate = `Bạn là chuyên gia tư vấn học bổng.
+Người dùng hỏi về: **HỌC BỔNG ĐẠI HỌC**
+
+YÊU CẦU:
+- Chỉ tập trung trả lời về HỌC BỔNG các loại
+- Các loại học bổng: toàn phần, bán phần, tài năng, khuyến khích
+- Điều kiện xét học bổng, giá trị, hạn nộp
+- Các trường có nhiều học bổng
+- KHÔNG lan sang điểm chuẩn hay tổ hợp xét tuyển
+
+Câu hỏi: ${userMessage}
+
+Trả lời về học bổng:`;
+                    break;
+                    
+                case 'phuong_thuc_chung':
+                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
+Người dùng hỏi về: **CÁC PHƯƠNG THỨC XÉT TUYỂN ĐẠI HỌC**
+
+YÊU CẦU:
+- Liệt kê ĐẦY ĐỦ các phương thức xét tuyển hiện nay
+- Xét điểm thi tốt nghiệp, xét học bạ, xét tuyển thẳng, xét chứng chỉ quốc tế, kỳ thi riêng...
+- Ưu/nhược điểm từng phương thức
+- KHÔNG đi sâu vào chi tiết từng ngành cụ thể nếu không được hỏi
+
+Câu hỏi: ${userMessage}
+
+Trả lời tổng quan về các phương thức xét tuyển:`;
+                    break;
+                    
+                case 'ky_thi_rieng':
+                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
+Người dùng hỏi về: **KỲ THI RIÊNG (ĐGNL, ĐGTD...)**
+
+YÊU CẦU:
+- Chỉ tập trung trả lời về các KỲ THI RIÊNG: HSA, V-ACT, TSA, ĐGNL Bộ Công an
+- Lịch thi, lệ phí, cấu trúc đề thi, địa điểm
+- Các trường sử dụng kết quả kỳ thi này
+- KHÔNG lan sang phương thức xét học bạ hay điểm thi tốt nghiệp
+
+Câu hỏi: ${userMessage}
+
+Trả lời về các kỳ thi riêng:`;
+                    break;
+                    
+                default:
+                    promptTemplate = `Bạn là chuyên gia tư vấn tuyển sinh.
+Người dùng hỏi về: **TƯ VẤN TUYỂN SINH CHUNG**
+
+YÊU CẦU:
+- Trả lời dựa trên câu hỏi cụ thể của họ
+- Nếu họ hỏi về ngành nào, chỉ tập trung ngành đó
+- Cung cấp thông tin chính xác, ngắn gọn
+- Nếu không rõ, hãy hỏi lại để hiểu rõ hơn
+
+Câu hỏi: ${userMessage}
+
+Trả lời:`;
+                    break;
+            }
+            
+            return promptTemplate;
+        }
+
+        // Khởi tạo ứng dụng
         function initApp() {
             loadChats();
             setupEventListeners();
@@ -327,37 +564,69 @@
 
             if (chats.length === 0) {
                 createNewChat();
+                // Hiển thị tin nhắn chào mừng
+                setTimeout(() => {
+                    addMessageToUI("assistant", getWelcomeMessage());
+                }, 500);
             } else {
                 loadChat(chats[0].id);
             }
+            
+            messageInput.focus();
         }
 
+        // Tin nhắn chào mừng
+        function getWelcomeMessage() {
+            return `# 👋 Chào bạn đến với **C3 - Chatbot tư vấn tuyển sinh 2026**!
+
+Tôi có thể giúp bạn:
+
+## 🎯 **BẠN MUỐN HỎI GÌ?**
+- **🏥 Ngành Bác sĩ** tuyển khối nào? (hỏi về tổ hợp)
+- **💻 Ngành CNTT** thi khối gì?
+- **📚 Lộ trình học tập** cho lớp 10, 11, 12
+- **📊 Điểm chuẩn** các trường/ngành
+- **💰 Học bổng** đại học
+- **📝 Các kỳ thi riêng** (HSA, V-ACT, TSA)
+- **🎓 Phương thức xét tuyển** đại học
+
+**Hãy đặt câu hỏi cụ thể, tôi sẽ trả lời ĐÚNG TRỌNG TÂM!** ✨`;
+        }
+
+        // Thiết lập event listeners
         function setupEventListeners() {
             chatForm.addEventListener('submit', handleSubmit);
-            messageInput.addEventListener('input', () => {
-                autoResizeTextarea();
-            });
+            
+            messageInput.addEventListener('input', autoResizeTextarea);
+            
             messageInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    if (messageInput.value.trim() !== '') {
+                    if (messageInput.value.trim() !== '' && !isSending) {
                         chatForm.dispatchEvent(new Event('submit'));
                     }
                 }
             });
+            
             newChatBtn.addEventListener('click', createNewChat);
-
-            document.getElementById('stop-response-btn').addEventListener('click', () => {
+            
+            stopResponseBtn.addEventListener('click', () => {
                 isStopped = true;
+                if (abortController) {
+                    abortController.abort();
+                }
                 stopButtonContainer.classList.add('hidden');
                 continueButtonContainer.classList.remove('hidden');
+                typingIndicator.classList.add('hidden');
+                isSending = false;
             });
             
             continueResponseBtn.addEventListener('click', continueResponse);
         }
-        
+
+        // Tự động điều chỉnh kích thước textarea
         function setupTextareaAutoResize() {
-            messageInput.addEventListener('input', autoResizeTextarea);
+            autoResizeTextarea();
         }
 
         function autoResizeTextarea() {
@@ -366,114 +635,30 @@
             messageInput.style.height = `${newHeight}px`;
         }
 
-        // PHÂN TÍCH LOẠI CÂU HỎI
-        function analyzeQuestionType(message) {
-            const lowerMessage = message.toLowerCase();
-            
-            if (lowerMessage.includes('là gì') || lowerMessage.includes('định nghĩa') || 
-                lowerMessage.includes('ai là') || lowerMessage.match(/\d{4}/)) {
-                return 'factual';
-            }
-            
-            if (lowerMessage.includes('cách') || lowerMessage.includes('làm sao') || 
-                lowerMessage.includes('hướng dẫn') || lowerMessage.includes('bước')) {
-                return 'howto';
-            }
-            
-            if (lowerMessage.includes('tại sao') || lowerMessage.includes('vì sao') || 
-                lowerMessage.includes('giải thích') || lowerMessage.includes('nguyên nhân')) {
-                return 'explanation';
-            }
-            
-            if (lowerMessage.includes('so sánh') || lowerMessage.includes('khác nhau') || 
-                lowerMessage.includes('giống nhau') || lowerMessage.includes('vs')) {
-                return 'comparison';
-            }
-            
-            return 'general';
-        }
-
-        // TỐI ƯU PROMPT THEO LOẠI CÂU HỎI
-        function optimizePrompt(userMessage) {
-            const questionType = analyzeQuestionType(userMessage);
-            
-            let systemPrompt = "";
-            
-            switch(questionType) {
-                case 'factual':
-                    systemPrompt = "TRẢ LỜI SỰ KIỆN: Chỉ cung cấp thông tin chính xác, ngắn gọn. Liệt kê facts nếu cần. Độ dài tối đa 150 từ.";
-                    break;
-                case 'howto':
-                    systemPrompt = "HƯỚNG DẪN: Trình bày từng bước rõ ràng, không giải thích dài dòng. Tối đa 5 bước.";
-                    break;
-                case 'explanation':
-                    systemPrompt = "GIẢI THÍCH: Tập trung vào bản chất vấn đề, dùng ví dụ ngắn nếu cần. Tối đa 200 từ.";
-                    break;
-                case 'comparison':
-                    systemPrompt = "SO SÁNH: Liệt kê điểm khác biệt chính, bảng so sánh nếu phù hợp. Tối đa 150 từ.";
-                    break;
-                default:
-                    systemPrompt = "Trả lời ngắn gọn, tập trung vào trọng tâm, không lan man. Tối đa 200 từ.";
-            }
-            
-            return `${userMessage}\n\n[YÊU CẦU: ${systemPrompt} Ưu tiên thông tin chính xác, cấu trúc rõ ràng.]`;
-        }
-
-        // ĐÁNH GIÁ CHẤT LƯỢNG TRẢ LỜI
-        function evaluateResponseQuality(response, originalQuestion) {
-            const wordCount = response.split(' ').length;
-            const hasBulletPoints = response.includes('- ') || response.includes('•') || response.includes('1.');
-            const questionKeywords = originalQuestion.toLowerCase().split(' ').filter(word => word.length > 2);
-            const relevanceScore = questionKeywords.filter(keyword => 
-                response.toLowerCase().includes(keyword)
-            ).length / Math.max(questionKeywords.length, 1);
-            
-            return {
-                isConcise: wordCount <= 300,
-                isStructured: hasBulletPoints,
-                isRelevant: relevanceScore >= 0.6,
-                wordCount: wordCount,
-                relevanceScore: relevanceScore
-            };
-        }
-
+        // Xử lý gửi tin nhắn
         async function handleSubmit(e) {
             e.preventDefault();
+            
             const userMessage = messageInput.value.trim();
             if (!userMessage || isSending) return;
 
             if (!currentChatId) {
                 createNewChat();
-                return;
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
 
             const currentChat = chats.find(chat => chat.id === currentChatId);
-            if (!currentChat) {
-                console.error("Không tìm thấy cuộc trò chuyện hiện tại!");
-                return;
-            }
+            if (!currentChat) return;
 
+            // Reset state
             isSending = true;
+            isStopped = false;
+            abortController = new AbortController();
+            
+            // Thêm tin nhắn user vào UI
             addMessageToUI("user", userMessage);
-            lastUserMessage = userMessage;
             
-            // Xử lý tin nhắn chào hỏi nhanh
-            const greetings = ["chào", "hello", "hi", "xin chào"];
-            if (greetings.some(greet => userMessage.toLowerCase().includes(greet))) {
-                const greetingResponse = "Xin chào! Tôi là AI Đa Năng. Tôi có thể giúp gì cho bạn?";
-                addMessageToUI("assistant", greetingResponse);
-                currentChat.messages.push({ 
-                    role: "assistant", 
-                    content: greetingResponse,
-                    timestamp: new Date().toISOString()
-                });
-                saveChats();
-                messageInput.value = "";
-                autoResizeTextarea();
-                isSending = false;
-                return;
-            }
-            
+            // Lưu tin nhắn user
             currentChat.messages.push({ 
                 role: "user", 
                 content: userMessage,
@@ -483,42 +668,43 @@
             saveChats();
             updateChatTitle(currentChat);
 
+            // Clear input
             messageInput.value = "";
             autoResizeTextarea();
             
+            // Hiển thị indicators
             typingIndicator.classList.remove("hidden");
             stopButtonContainer.classList.remove("hidden");
             continueButtonContainer.classList.add("hidden");
-            isStopped = false;
 
             try {
-                // TỐI ƯU: Chỉ gửi 12 tin nhắn gần nhất
-                const recentMessages = currentChat.messages.slice(-12);
-                
-                currentChatSession = model.startChat({
-                    history: recentMessages.map(msg => ({
-                        role: msg.role === "user" ? "user" : "model",
-                        parts: [{ text: msg.content }]
-                    })),
-                    generationConfig: {
-                        maxOutputTokens: 2048, // GIẢM: Tránh trả lời dài dòng
-                        temperature: 0.3,     // GIẢM MẠNH: Tập trung vào facts
-                        topP: 0.5,           // GIẢM: Chọn từ ngữ chắc chắn
-                        topK: 20,            // GIẢM: Giới hạn lựa chọn từ vựng
-                    }
-                });
-
-                // PROMPT ENGINEERING: Tối ưu hóa câu hỏi
-                const optimizedPrompt = optimizePrompt(userMessage);
-                
-                const result = await currentChatSession.sendMessageStream(optimizedPrompt);
-                let fullResponse = '';
+                // Tạo message container cho bot
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'bot-message';
-                messageDiv.innerHTML = '<div class="message-content"></div>';
+                messageDiv.innerHTML = '<div class="message-content markdown"></div>';
                 chatMessages.appendChild(messageDiv);
                 
                 const contentDiv = messageDiv.querySelector('.message-content');
+                
+                // SỬ DỤNG PROMPT PHÂN TÍCH CHỦ ĐỀ
+                const topicPrompt = createTopicPrompt(userMessage);
+                
+                // Tạo chat session mới
+                const chat = model.startChat({
+                    history: [],
+                    generationConfig: {
+                        maxOutputTokens: 2048,
+                        temperature: 0.5,
+                    }
+                });
+                
+                // Gửi tin nhắn và nhận stream
+                const result = await chat.sendMessageStream(topicPrompt);
+                currentChatSession = chat;
+                
+                let fullResponse = '';
+                
+                // Ẩn typing indicator
                 typingIndicator.classList.add("hidden");
                 
                 // Streaming response
@@ -530,40 +716,48 @@
                     
                     contentDiv.innerHTML = formatMessage(fullResponse);
                     scrollToBottom();
-                    
-                    await new Promise(resolve => setTimeout(resolve, 10));
                 }
 
-                if (!isStopped) {
-                    // Đánh giá chất lượng câu trả lời
-                    const quality = evaluateResponseQuality(fullResponse, userMessage);
-                    
+                if (!isStopped && fullResponse) {
+                    // Lưu tin nhắn bot
                     currentChat.messages.push({ 
                         role: "assistant", 
                         content: fullResponse,
-                        timestamp: new Date().toISOString(),
-                        quality: quality // Lưu thông tin chất lượng
+                        timestamp: new Date().toISOString()
                     });
                     saveChats();
                     
-                    // Hiển thị đánh giá chất lượng (tùy chọn)
-                    if (quality.wordCount > 400) {
-                        const qualityDiv = document.createElement('div');
-                        qualityDiv.className = 'quality-indicator';
-                        qualityDiv.textContent = `📊 Độ dài: ${quality.wordCount} từ - ${quality.isRelevant ? '✅ Trọng tâm' : '⚠️ Có thể lan man'}`;
-                        messageDiv.appendChild(qualityDiv);
-                    }
+                    // Hiển thị badge chủ đề
+                    const topic = analyzeQuestionTopic(userMessage);
+                    const topicNames = {
+                        'bacsi_tohop': '🏥 Ngành Bác sĩ',
+                        'kysu_tohop': '💻 Ngành Kỹ sư/CNTT',
+                        'supham_tohop': '📚 Ngành Sư phạm',
+                        'lo_trinh_hoc_tap': '📅 Lộ trình học tập',
+                        'diem_chuan': '📊 Điểm chuẩn',
+                        'hoc_bong': '💰 Học bổng',
+                        'phuong_thuc_chung': '🎓 Phương thức xét tuyển',
+                        'ky_thi_rieng': '📝 Kỳ thi riêng',
+                        'general': '💬 Tư vấn chung'
+                    };
                     
-                    // Kiểm tra xem response có bị cắt ngắn không
-                    const isTruncated = fullResponse.length > 0 && !/[.!?]$/.test(fullResponse);
-                    if (isTruncated) {
-                        continueButtonContainer.classList.remove("hidden");
-                    }
+                    const qualityDiv = document.createElement('div');
+                    qualityDiv.className = 'quality-indicator';
+                    qualityDiv.innerHTML = `🔍 Chủ đề: ${topicNames[topic] || 'Tư vấn'}`;
+                    messageDiv.appendChild(qualityDiv);
+                    
+                } else if (isStopped) {
+                    contentDiv.innerHTML = formatMessage(fullResponse + "\n\n_[Đã dừng phản hồi]_");
                 }
                 
             } catch (error) {
-                console.error("Lỗi: ", error);
-                addMessageToUI("assistant", "Lỗi kết nối! Vui lòng thử lại.");
+                console.error("Lỗi chi tiết:", error);
+                
+                let errorMessage = "❌ **Xin lỗi, đã xảy ra lỗi!**\n\n";
+                errorMessage += `Chi tiết: ${error.message}`;
+                
+                addMessageToUI("assistant", errorMessage);
+                
             } finally {
                 isSending = false;
                 typingIndicator.classList.add("hidden");
@@ -571,78 +765,58 @@
                 scrollToBottom();
             }
         }
-        
+
+        // Tiếp tục câu trả lời
         async function continueResponse() {
-            if (!currentChatSession || isSending) return;
+            if (!lastUserMessage || isSending || !currentChatSession) return;
             
             const currentChat = chats.find(chat => chat.id === currentChatId);
             if (!currentChat) return;
             
             isSending = true;
+            isStopped = false;
+            
             typingIndicator.classList.remove("hidden");
             stopButtonContainer.classList.remove("hidden");
             continueButtonContainer.classList.add("hidden");
-            isStopped = false;
-            
-            try {
-                const recentMessages = currentChat.messages.slice(-12);
-                
-                currentChatSession = model.startChat({
-                    history: recentMessages.map(msg => ({
-                        role: msg.role === "user" ? "user" : "model",
-                        parts: [{ text: msg.content }]
-                    })),
-                    generationConfig: {
-                        maxOutputTokens: 1024, // TIẾP TỤC NGẮN GỌN
-                        temperature: 0.3,
-                        topP: 0.5,
-                        topK: 20,
-                    }
-                });
 
-                // PROMPT TIẾP TỤC TẬP TRUNG
-                const continuePrompt = "Hãy tiếp tục câu trả lời MỘT CÁCH NGẮN GỌN, chỉ tập trung vào thông tin quan trọng nhất. Không lặp lại nội dung cũ. Tối đa 100 từ.";
+            try {
+                const lastBotMessageIndex = [...currentChat.messages].reverse()
+                    .findIndex(msg => msg.role === "assistant");
+                
+                if (lastBotMessageIndex === -1) return;
+                
+                const actualIndex = currentChat.messages.length - 1 - lastBotMessageIndex;
+                
+                const continuePrompt = `Hãy TIẾP TỤC câu trả lời trước, bổ sung thêm chi tiết nhưng vẫn giữ đúng chủ đề đang trả lời.`;
                 
                 const result = await currentChatSession.sendMessageStream(continuePrompt);
-                let continuedResponse = '';
                 
-                // Tìm tin nhắn bot cuối cùng
-                const lastBotMessageIndex = currentChat.messages.map((msg, idx) => 
-                    msg.role === "assistant" ? idx : -1).filter(idx => idx !== -1).pop();
+                const botMessages = document.querySelectorAll('.bot-message');
+                const targetMessageDiv = botMessages[botMessages.length - 1];
+                const contentDiv = targetMessageDiv.querySelector('.message-content');
                 
-                if (lastBotMessageIndex !== undefined && lastBotMessageIndex >= 0) {
-                    const botMessages = document.querySelectorAll('.bot-message');
-                    const lastBotMessage = botMessages[botMessages.length - 1];
-                    const contentDiv = lastBotMessage.querySelector('.message-content');
+                typingIndicator.classList.add("hidden");
+                
+                let continuedResponse = currentChat.messages[actualIndex].content;
+                
+                for await (const chunk of result.stream) {
+                    if (isStopped) break;
                     
-                    typingIndicator.classList.add("hidden");
+                    const chunkText = chunk.text();
+                    continuedResponse += chunkText;
                     
-                    for await (const chunk of result.stream) {
-                        if (isStopped) break;
-                        
-                        const chunkText = chunk.text();
-                        continuedResponse += chunkText;
-                        
-                        // Cập nhật nội dung hiện tại
-                        currentChat.messages[lastBotMessageIndex].content += " " + chunkText;
-                        contentDiv.innerHTML = formatMessage(currentChat.messages[lastBotMessageIndex].content);
-                        scrollToBottom();
-                        
-                        await new Promise(resolve => setTimeout(resolve, 10));
-                    }
-                    
-                    if (!isStopped) {
-                        saveChats();
-                        
-                        const isStillTruncated = continuedResponse.length > 0 && !/[.!?]$/.test(continuedResponse);
-                        if (isStillTruncated) {
-                            continueButtonContainer.classList.remove("hidden");
-                        }
-                    }
+                    contentDiv.innerHTML = formatMessage(continuedResponse);
+                    scrollToBottom();
                 }
+                
+                if (!isStopped) {
+                    currentChat.messages[actualIndex].content = continuedResponse;
+                    saveChats();
+                }
+                
             } catch (error) {
-                console.error("Lỗi khi tiếp tục: ", error);
-                addMessageToUI("assistant", "Không thể tiếp tục câu trả lời. Vui lòng thử lại với câu hỏi mới.");
+                console.error("Lỗi khi tiếp tục:", error);
             } finally {
                 isSending = false;
                 typingIndicator.classList.add("hidden");
@@ -651,64 +825,94 @@
             }
         }
 
+        // Thêm tin nhắn vào UI
         function addMessageToUI(role, content) {
             const messageDiv = document.createElement('div');
             messageDiv.className = role === 'user' ? 'user-message' : 'bot-message';
             
             const formattedContent = formatMessage(content);
-            messageDiv.innerHTML = `<div class="message-content">${formattedContent}</div>`;
+            messageDiv.innerHTML = `<div class="message-content markdown">${formattedContent}</div>`;
             
             chatMessages.appendChild(messageDiv);
             scrollToBottom();
         }
 
+        // Format message với markdown
         function formatMessage(content) {
             if (!content) return '';
 
-            let formatted = content.replace(/```([\w]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+            // Escape HTML
+            content = escapeHtml(content);
+            
+            // Format code blocks
+            content = content.replace(/```([\w]*)\n([\s\S]*?)```/g, (match, lang, code) => {
                 const langDisplay = lang ? lang : 'text';
                 return `<div class="code-block">
                     <div class="code-header flex justify-between items-center px-3 py-2 bg-gray-800 text-gray-300 text-xs rounded-t-md">
                         <span>${langDisplay}</span>
                         <button class="copy-code-btn hover:text-white" onclick="copyToClipboard(this)" data-code="${encodeURIComponent(code.trim())}">
-                            <i class="fas fa-copy"></i> Copy code
+                            <i class="fas fa-copy mr-1"></i>Copy
                         </button>
                     </div>
-                    <pre><code class="language-${lang || 'text'}">${escapeHtml(code.trim())}</code></pre>
+                    <pre><code class="language-${lang || 'text'}">${code.trim()}</code></pre>
                 </div>`;
             });
 
-            formatted = formatted.replace(/\|(.+)\|\n\|(?:[-:]+\|)+\n((?:\|.+\|\n)+)/g, (match) => {
-                return `<div class="overflow-x-auto"><table class="w-full">
-                    ${match.replace(/\|(.+)\|\n\|(?:[-:]+\|)+\n/, (header) => {
-                        const headerCells = header.split('|').slice(1, -1);
-                        return `<thead><tr>${headerCells.map(cell => `<th class="px-4 py-2">${cell.trim()}</th>`).join('')}</tr></thead>`;
-                    })}
-                    <tbody>
-                        ${match.split('\n').slice(2).filter(Boolean).map(row => {
-                            const cells = row.split('|').slice(1, -1);
-                            return `<tr>${cells.map(cell => `<td class="px-4 py-2">${cell.trim()}</td>`).join('')}</tr>`;
-                        }).join('')}
-                    </tbody>
-                </table></div>`;
-            });
+            // Format headings
+            content = content.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+            content = content.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+            content = content.replace(/^# (.*$)/gm, '<h1>$1</h1>');
 
-            formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-            formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-            formatted = formatted.replace(/`([^`]+)`/g, '<code class="bg-gray-800 px-1 py-0.5 rounded">$1</code>');
+            // Format bold and italic
+            content = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            content = content.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
-            formatted = formatted.split('\n\n').map(paragraph => {
-                if (paragraph.trim().startsWith('<') && paragraph.trim().endsWith('>')) {
-                    return paragraph;
+            // Format lists
+            const lines = content.split('\n');
+            let inList = false;
+            let formattedLines = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                
+                if (line.match(/^[-*+]\s/)) {
+                    if (!inList) {
+                        formattedLines.push('<ul class="list-disc pl-5 mb-3 space-y-1">');
+                        inList = 'ul';
+                    }
+                    formattedLines.push(`<li>${line.substring(2)}</li>`);
                 }
-                return `<p>${paragraph}</p>`;
-            }).join('');
-
-            formatted = formatted.replace(/\n(?![<])/g, '<br>');
-
-            return formatted;
+                else if (line.match(/^\d+\.\s/)) {
+                    if (!inList) {
+                        formattedLines.push('<ol class="list-decimal pl-5 mb-3 space-y-1">');
+                        inList = 'ol';
+                    }
+                    formattedLines.push(`<li>${line.substring(line.indexOf('.') + 2)}</li>`);
+                }
+                else {
+                    if (inList) {
+                        formattedLines.push(`</${inList}>`);
+                        inList = false;
+                    }
+                    
+                    if (line.trim() === '') {
+                        formattedLines.push('<br>');
+                    } else if (!line.startsWith('<h') && !line.startsWith('<p')) {
+                        formattedLines.push(`<p class="mb-3">${line}</p>`);
+                    } else {
+                        formattedLines.push(line);
+                    }
+                }
+            }
+            
+            if (inList) {
+                formattedLines.push(`</${inList}>`);
+            }
+            
+            return formattedLines.join('');
         }
 
+        // Escape HTML
         function escapeHtml(text) {
             const map = {
                 '&': '&amp;',
@@ -720,12 +924,14 @@
             return text.replace(/[&<>"']/g, m => map[m]);
         }
 
+        // Scroll xuống cuối
         function scrollToBottom() {
             setTimeout(() => {
                 chatContainer.scrollTop = chatContainer.scrollHeight;
-            }, 100);
+            }, 50);
         }
 
+        // Tạo cuộc trò chuyện mới
         function createNewChat() {
             const newChat = {
                 id: Date.now().toString(),
@@ -742,6 +948,7 @@
             messageInput.focus();
         }
 
+        // Load cuộc trò chuyện
         function loadChat(chatId) {
             currentChatId = chatId;
 
@@ -756,15 +963,18 @@
             chatMessages.innerHTML = '';
 
             const currentChat = chats.find(chat => chat.id === chatId);
-            if (!currentChat || currentChat.messages.length === 0) return;
-
-            currentChat.messages.forEach(message => {
-                addMessageToUI(message.role, message.content);
-            });
+            if (currentChat && currentChat.messages.length > 0) {
+                currentChat.messages.forEach(message => {
+                    addMessageToUI(message.role, message.content);
+                });
+            } else if (currentChat && currentChat.messages.length === 0) {
+                addMessageToUI("assistant", getWelcomeMessage());
+            }
             
             scrollToBottom();
         }
 
+        // Xóa cuộc trò chuyện
         function deleteChat(chatId, event) {
             event.stopPropagation();
             chats = chats.filter(chat => chat.id !== chatId);
@@ -780,6 +990,7 @@
             }
         }
 
+        // Cập nhật tiêu đề chat
         function updateChatTitle(chat) {
             if (!chat || !chat.messages || chat.messages.length === 0) {
                 chat.title = "Cuộc trò chuyện mới";
@@ -803,13 +1014,15 @@
             renderChatHistory();
         }
 
+        // Render lịch sử chat
         function renderChatHistory() {
             chatHistory.innerHTML = '';
 
             if (chats.length === 0) {
                 chatHistory.innerHTML = `
-                    <div class="text-center p-4 text-gray-400">
-                        Chưa có cuộc trò chuyện nào
+                    <div class="text-center p-4 text-gray-400 text-sm">
+                        <i class="fas fa-comments mb-2 text-2xl"></i>
+                        <p>Chưa có cuộc trò chuyện</p>
                     </div>
                 `;
                 return;
@@ -817,25 +1030,27 @@
 
             chats.forEach(chat => {
                 const chatItem = document.createElement('div');
-                chatItem.className = `chat-item p-3 rounded-md flex items-center justify-between cursor-pointer hover:bg-dark-hover transition-colors ${chat.id === currentChatId ? 'bg-dark-hover' : ''}`;
+                chatItem.className = `chat-item p-2 rounded-md flex items-center justify-between cursor-pointer hover:bg-dark-hover transition-colors group ${chat.id === currentChatId ? 'bg-dark-hover' : ''}`;
                 chatItem.dataset.id = chat.id;
 
                 const chatDate = new Date(chat.createdAt || chat.id);
                 const formattedDate = chatDate.toLocaleDateString('vi-VN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
                     day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
+                    month: '2-digit'
                 });
 
                 chatItem.innerHTML = `
                     <div class="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
-                        <div class="min-w-0">
-                            <div class="chat-title truncate font-medium">${chat.title || 'Cuộc trò chuyện mới'}</div>
-                            <div class="text-xs text-gray-400 truncate">${formattedDate}</div>
+                        <i class="fas fa-message text-gray-400 text-xs"></i>
+                        <div class="min-w-0 flex-1">
+                            <div class="chat-title truncate text-sm font-medium">${chat.title || 'Cuộc trò chuyện mới'}</div>
+                            <div class="text-xs text-gray-400">${formattedDate}</div>
                         </div>
                     </div>
-                    <button class="delete-chat-btn text-gray-400 hover:text-red-500 p-1">
-                        <i class="fa-solid fa-delete-left"></i>
+                    <button class="delete-chat-btn text-gray-500 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
                     </button>
                 `;
 
@@ -847,59 +1062,61 @@
 
                 const deleteBtn = chatItem.querySelector('.delete-chat-btn');
                 deleteBtn.addEventListener('click', (e) => {
-                    deleteChat(chat.id, e);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (confirm('Xóa cuộc trò chuyện này?')) {
+                        deleteChat(chat.id, e);
+                    }
                 });
 
                 chatHistory.appendChild(chatItem);
             });
         }
 
+        // Load chats từ localStorage
         function loadChats() {
             const storedChats = localStorage.getItem('C3-chats');
             if (storedChats) {
-                const now = Date.now();
-                const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+                try {
+                    chats = JSON.parse(storedChats);
+                    chats.sort((a, b) => new Date(b.createdAt || b.id) - new Date(a.createdAt || a.id));
+                } catch (e) {
+                    console.error("Lỗi parse chats:", e);
+                    chats = [];
+                }
+            } else {
+                chats = [];
+            }
+            
+            renderChatHistory();
+        }
 
-                chats = JSON.parse(storedChats)
-                    .filter(chat => now - new Date(chat.createdAt || chat.id).getTime() < THIRTY_DAYS)
-                    .sort((a, b) => new Date(b.createdAt || b.id) - new Date(a.createdAt || a.id));
-                
-                saveChats();
-                renderChatHistory();
+        // Save chats to localStorage
+        function saveChats() {
+            try {
+                localStorage.setItem('C3-chats', JSON.stringify(chats));
+            } catch (e) {
+                console.error("Lỗi save chats:", e);
             }
         }
 
-        function saveChats() {
-            const now = Date.now();
-            const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-
-            chats = chats.filter(chat => {
-                const chatTime = new Date(chat.createdAt || chat.id).getTime();
-                return now - chatTime < THIRTY_DAYS;
-            });
-
-            localStorage.setItem('C3-chats', JSON.stringify(chats));
-        }
-
-        function copyToClipboard(button) {
+        // Copy code to clipboard
+        window.copyToClipboard = function(button) {
             const code = decodeURIComponent(button.getAttribute('data-code'));
             navigator.clipboard.writeText(code).then(() => {
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-check"></i> Đã sao chép!';
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check mr-1"></i>Đã copy!';
                 setTimeout(() => {
-                    button.innerHTML = originalText;
+                    button.innerHTML = originalHTML;
                 }, 2000);
+            }).catch(err => {
+                console.error('Lỗi copy:', err);
+                alert('Không thể copy code');
             });
-        }
+        };
 
-        window.addEventListener("beforeunload", () => {
-            chats = chats.filter(chat => chat.messages.length > 0);
-            saveChats();
-        });
-
+        // Khởi tạo app
         document.addEventListener('DOMContentLoaded', initApp);
-        
-        window.copyToClipboard = copyToClipboard;
     </script>
 </body>
 </html>
