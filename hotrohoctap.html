@@ -303,31 +303,7 @@
         </div>
     </div>
     
-
-    <script type="importmap">
-        {
-            "imports": {
-                "@google/generative-ai": "https://esm.run/@google/generative-ai"
-            }
-        }
-    </script>
     <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
-
-        // =============================================
-        // API KEY - ĐÃ ĐƯỢC MÃ HÓA
-        // =============================================
-        // Key gốc: AIzaSyC2GJ0mdbCpXoRncLJjvAH7m0wEZ6vQv40
-        // Đã mã hóa base64 để ẩn khỏi view source đơn giản
-        const encodedKey = "QUl6YVN5QzJHSjBtZGJDcFhvUm5jTEpqdkFIN20wd0VaNnZRdjQw";
-        const API_KEY = atob(encodedKey); // Giải mã
-
-        // Cách 2: Lưu trong sessionStorage (chỉ có trong memory)
-        sessionStorage.setItem('GEMINI_API_KEY', API_KEY);
-        
-        // Khởi tạo Gemini AI
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
         // DOM Elements
         const chatContainer = document.getElementById('chat-container');
@@ -348,7 +324,6 @@
         let currentChatId = null;
         let isSending = false;
         let isStopped = false;
-        let currentChatSession = null;
         let lastUserMessage = "";
         let abortController = null;
 
@@ -443,10 +418,7 @@ Nhập câu hỏi của bạn 👇`;
                 typingIndicator.classList.add('hidden');
                 isSending = false;
             });
-            
-            continueResponseBtn.addEventListener('click', continueResponse);
-        }
-
+  
         // Tự động điều chỉnh kích thước textarea
         function setupTextareaAutoResize() {
             autoResizeTextarea();
@@ -513,35 +485,31 @@ Nhập câu hỏi của bạn 👇`;
                 const shortPrompt = createShortPrompt(userMessage);
                 
                 // Tạo chat session mới
-                const chat = model.startChat({
-                    history: [],
-                    generationConfig: {
-                        maxOutputTokens: 500, // Giảm xuống để trả lời ngắn
-                        temperature: 0.3, // Giảm nhiệt độ để trả lời chính xác hơn
-                    }
-                });
-                
-                // Gửi tin nhắn và nhận stream
-                const result = await chat.sendMessageStream(shortPrompt);
-                currentChatSession = chat;
-                lastUserMessage = userMessage;
-                
-                let fullResponse = '';
-                
-                // Ẩn typing indicator
-                typingIndicator.classList.add("hidden");
-                
-                // Streaming response
-                for await (const chunk of result.stream) {
-                    if (isStopped) break;
-                    
-                    const chunkText = chunk.text();
-                    fullResponse += chunkText;
-                    
-                    contentDiv.innerHTML = formatMessage(fullResponse);
-                    scrollToBottom();
-                }
+            let fullResponse = '';
 
+typingIndicator.classList.add("hidden");
+
+const response = await fetch(
+  "https://calm-block-9498.lenguyenngocthieu55.workers.dev/",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: shortPrompt
+    })
+  }
+);
+
+const data = await response.json();
+
+fullResponse =
+  data.candidates?.[0]?.content?.parts?.[0]?.text
+  || "Không có phản hồi";
+
+contentDiv.innerHTML = formatMessage(fullResponse);
+scrollToBottom();
                 if (!isStopped && fullResponse) {
                     // Lưu tin nhắn bot
                     currentChat.messages.push({ 
@@ -559,65 +527,6 @@ Nhập câu hỏi của bạn 👇`;
                 console.error("Lỗi:", error);
                 addMessageToUI("assistant", "❌ Lỗi: " + error.message);
                 
-            } finally {
-                isSending = false;
-                typingIndicator.classList.add("hidden");
-                stopButtonContainer.classList.add("hidden");
-                scrollToBottom();
-            }
-        }
-
-        // Tiếp tục câu trả lời
-        async function continueResponse() {
-            if (!lastUserMessage || isSending || !currentChatSession) return;
-            
-            const currentChat = chats.find(chat => chat.id === currentChatId);
-            if (!currentChat) return;
-            
-            isSending = true;
-            isStopped = false;
-            
-            typingIndicator.classList.remove("hidden");
-            stopButtonContainer.classList.remove("hidden");
-            continueButtonContainer.classList.add("hidden");
-
-            try {
-                const lastBotMessageIndex = [...currentChat.messages].reverse()
-                    .findIndex(msg => msg.role === "assistant");
-                
-                if (lastBotMessageIndex === -1) return;
-                
-                const actualIndex = currentChat.messages.length - 1 - lastBotMessageIndex;
-                
-                const continuePrompt = `Tiếp tục trả lời nhưng vẫn NGẮN GỌN, chỉ thêm 1-2 câu nếu cần.`;
-                
-                const result = await currentChatSession.sendMessageStream(continuePrompt);
-                
-                const botMessages = document.querySelectorAll('.bot-message');
-                const targetMessageDiv = botMessages[botMessages.length - 1];
-                const contentDiv = targetMessageDiv.querySelector('.message-content');
-                
-                typingIndicator.classList.add("hidden");
-                
-                let continuedResponse = currentChat.messages[actualIndex].content;
-                
-                for await (const chunk of result.stream) {
-                    if (isStopped) break;
-                    
-                    const chunkText = chunk.text();
-                    continuedResponse += chunkText;
-                    
-                    contentDiv.innerHTML = formatMessage(continuedResponse);
-                    scrollToBottom();
-                }
-                
-                if (!isStopped) {
-                    currentChat.messages[actualIndex].content = continuedResponse;
-                    saveChats();
-                }
-                
-            } catch (error) {
-                console.error("Lỗi:", error);
             } finally {
                 isSending = false;
                 typingIndicator.classList.add("hidden");
@@ -915,12 +824,7 @@ Nhập câu hỏi của bạn 👇`;
                 alert('Không thể copy code');
             });
         };
-
-        // Xóa key khỏi bộ nhớ sau khi dùng
-        window.addEventListener('beforeunload', function() {
-            sessionStorage.removeItem('GEMINI_API_KEY');
-        });
-
+        
         // Khởi tạo app
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
